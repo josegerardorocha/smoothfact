@@ -10,7 +10,7 @@ Rectangle {
     radius: 8
     property string username: "User"
 
-     signal logout()
+    signal logout()
 
     // --- Top menu bar ---
     Rectangle {

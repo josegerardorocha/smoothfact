@@ -28,6 +28,20 @@ ApplicationWindow {
                 loginForm.username = ""
                 loginForm.password = ""
                 console.log("Logged out, returning to login screen")
+
+                HttpRequest.post("logout.php", "", function(success, response) {
+                    if (success) {
+                        console.log("Logout response:", response)
+                        if (response.status === "ok") {
+                            console.log("User logged out successfully.")
+                        } else {
+                            console.log("Unexpected response:", response)
+                        }
+                    } else {
+                        console.log("Logout request failed.")
+                    }
+                })
+
             }
         }
     }

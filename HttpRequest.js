@@ -28,6 +28,27 @@ function post(endpoint, params, callback) {
     xhr.send(params)
 }
 
+// POST request for binary (PDF, images, etc.)
+function postBinary(endpoint, params, callback) {
+    var xhr = new XMLHttpRequest()
+    xhr.open("POST", BASE_URL + endpoint)
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+    xhr.responseType = "arraybuffer"   // Important: treat as binary
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+                callback(true, xhr.response) // response is ArrayBuffer
+            } else {
+                console.log("HTTP error:", xhr.status, xhr.statusText)
+                callback(false, null)
+            }
+        }
+    }
+
+    xhr.send(params)
+}
+
 // GET request helper (optional)
 function get(endpoint, callback) {
     var xhr = new XMLHttpRequest()

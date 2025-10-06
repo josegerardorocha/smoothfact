@@ -4,7 +4,7 @@ project(smoothfact VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2)
+find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2 Pdf)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -16,18 +16,16 @@ qt_add_qml_module(appsmoothfact
     URI Smoothfact
     VERSION 1.0
     QML_FILES
+        images/LogoutIcon.qml
+        customcontrols/CustomTextField.qml
         Main.qml
         LoginForm.qml
         LoginDialog.qml
-        CustomTextField.qml
         MainMenu.qml
-        images/LogoutIcon.qml
-    RESOURCES
-        #images/logout_icon.svg
-        QML_FILES InfoPage.qml
-        QML_FILES InvoicePage.qml
-        QML_FILES BankMovementPage.qml
-        QML_FILES HttpRequest.js
+        InfoPage.qml
+        InvoicePage.qml
+        BankMovementPage.qml
+        HttpRequest.js
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -44,6 +42,7 @@ set_target_properties(appsmoothfact PROPERTIES
 target_link_libraries(appsmoothfact
     PRIVATE Qt6::Quick
     PRIVATE Qt6::QuickControls2
+    PRIVATE Qt6::Pdf
 )
 
 include(GNUInstallDirs)
