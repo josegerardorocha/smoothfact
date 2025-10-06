@@ -1,2 +1,4 @@
 build/*
 *.user*
+backend/composer.lock
+backend/vendor/*
