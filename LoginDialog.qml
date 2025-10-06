@@ -3,26 +3,14 @@ import QtQuick.Layouts
 import QtQuick.Controls
 
 Rectangle{
+    id: root
     Layout.fillHeight: true
     Layout.fillWidth: true
-    //Layout.preferredWidth: 400
     color: "white"
+    property alias username: usernameField.text
+    property alias password: passwordField.text
 
     signal loginSuccess(string username)
-    // function sha256(str) {
-    //     // returns a hex string of SHA-256 hash
-    //     if (typeof crypto !== "undefined" && crypto.subtle) {
-    //         var enc = new TextEncoder()
-    //         var data = enc.encode(str)
-    //         return crypto.subtle.digest("SHA-256", data).then(function(hashBuffer) {
-    //             var hashArray = Array.from(new Uint8Array(hashBuffer))
-    //             return hashArray.map(b => b.toString(16).padStart(2,'0')).join('')
-    //         })
-    //     } else {
-    //         console.warn("Crypto API not available, sending plaintext!")
-    //         return str
-    //     }
-    // }
 
     ColumnLayout {
         anchors.centerIn: parent
@@ -84,31 +72,38 @@ Rectangle{
 
                 //Behavior on color { ColorAnimation { duration: 120 } }
             }
-
             onClicked: {
-                // 1. Get the text
-                var username = usernameField.text
-                var password = passwordField.text
+                var params = "username=" + encodeURIComponent(root.username) +
+                        "&password=" + encodeURIComponent(root.password)
 
-                // 2. Hash the password (SHA-256)
-                // var hashedPassword = sha256(password)
-
-                // 3. Send POST request to PHP
-                var xhr = new XMLHttpRequest()
-                xhr.open("POST", "http://localhost/faturas/backend/login.php")
-                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === XMLHttpRequest.DONE) {
-                        console.log("Server response:", xhr.responseText)
-                        var response = JSON.parse(xhr.responseText)
-                        console.log("Username:", response.username)
-                        root.loginSuccess(response.username)
-                    }
-                }
-                var params = "username=" + encodeURIComponent(username) +
-                        "&password=" + encodeURIComponent(password)
-                xhr.send(params)
+                HttpRequest.post("backend/login.php", params,
+                                 function(success, response) {
+                                     if (success && response.success) {
+                                         console.log("Login OK, user:", response.username)
+                                         root.loginSuccess(response.username)
+                                     } else {
+                                         console.log("Login failed")
+                                         errorAnim.restart()
+                                     }
+                                 }
+                )
             }
+        }
+        Text {
+            id: errorText
+            text: "Login failed"
+            color: "red"
+            font.pixelSize: 16
+            opacity: 0.0
+            Layout.alignment: Qt.AlignHCenter
+        }
+
+        SequentialAnimation {
+            id: errorAnim
+            running: false
+            PropertyAnimation { target: errorText; property: "opacity"; from: 0; to: 1; duration: 50 }
+            PauseAnimation { duration: 750 }
+            PropertyAnimation { target: errorText; property: "opacity"; from: 1; to: 0; duration: 600 }
         }
     }
 }

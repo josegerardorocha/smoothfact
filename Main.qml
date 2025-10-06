@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 
 ApplicationWindow {
     width: 1400
@@ -7,23 +8,27 @@ ApplicationWindow {
     visible: true
     title: qsTr("SmoothFact")
 
-    LoginForm {
-        id: loginForm
+    StackLayout {
+        id: stack
         anchors.fill: parent
-        visible: true
-
-        onLoginSuccess: (username) => {
-            loginForm.visible = false
-            infoPage.username = username
-            infoPage.visible = true
-            console.log("Login successful for user:", username)
+        currentIndex: 0
+        LoginForm {
+            id: loginForm
+            visible: true
+            onLoginSuccess: (username) => {
+                                stack.currentIndex = 1
+                                infoPage.username = username
+                                console.log("Login successful for user:", username)
+                            }
         }
-    }
-
-
-    Info {
-        id: infoPage
-        anchors.fill: parent
-        visible: false
+        MainMenu {
+            id: infoPage
+            onLogout: {
+                stack.currentIndex = 0
+                loginForm.username = ""
+                loginForm.password = ""
+                console.log("Logged out, returning to login screen")
+            }
+        }
     }
 }

@@ -6,7 +6,8 @@ import QtQuick.Shapes
 RowLayout{
     id: root
     spacing: 0
-
+    property alias username: loginDialog.username
+    property alias password: loginDialog.password
     signal loginSuccess(string username)
 
     Rectangle{
@@ -51,7 +52,7 @@ RowLayout{
         }
     }
     LoginDialog{
-        //Layout.rightMargin: 0.1
+        id: loginDialog
         onLoginSuccess: (username) => {
                             root.loginSuccess(username)
                             console.log("LoginForm: Login successful for user:", username)

@@ -13,16 +13,21 @@ qt_add_executable(appsmoothfact
 )
 
 qt_add_qml_module(appsmoothfact
-    URI smoothfact
+    URI Smoothfact
     VERSION 1.0
     QML_FILES
         Main.qml
         LoginForm.qml
         LoginDialog.qml
         CustomTextField.qml
-        Info.qml
+        MainMenu.qml
+        images/LogoutIcon.qml
     RESOURCES
-        images/logout.png
+        #images/logout_icon.svg
+        QML_FILES InfoPage.qml
+        QML_FILES InvoicePage.qml
+        QML_FILES BankMovementPage.qml
+        QML_FILES HttpRequest.js
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
