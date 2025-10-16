@@ -3,33 +3,44 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 ApplicationWindow {
+    id: root
     width: 1400
-    height: 800
+    height: 600
     visible: true
     title: qsTr("SmoothFact")
 
-    StackLayout {
+    property Item loginPageRef: null
+
+    StackView {
         id: stack
         anchors.fill: parent
-        currentIndex: 0
+        initialItem: loginComponent
+    }
+    Component {
+        id: loginComponent
+
         LoginForm {
             id: loginForm
-            visible: true
             onLoginSuccess: (username) => {
-                                stack.currentIndex = 1
-                                infoPage.username = username
                                 console.log("Login successful for user:", username)
+                                // Push MainMenu page with 'username' property set
+                                root.loginPageRef = loginForm
+                                stack.push(mainMenuComponent, { username: username })
                             }
         }
+    }
+
+    // Define MainMenu component separately
+    Component {
+        id: mainMenuComponent
+
         MainMenu {
             id: infoPage
-            onLogout: {
-                stack.currentIndex = 0
-                loginForm.username = ""
-                loginForm.password = ""
-                console.log("Logged out, returning to login screen")
+            property string username: ""
 
-                HttpRequest.post("logout.php", "", function(success, response) {
+            onLogout: {
+                console.log("Logged out, returning to login screen")
+                HttpRequest.post("backend/logout.php", "", function(success, response) {
                     if (success) {
                         console.log("Logout response:", response)
                         if (response.status === "ok") {
@@ -41,7 +52,9 @@ ApplicationWindow {
                         console.log("Logout request failed.")
                     }
                 })
-
+                // Go back to LoginForm
+                root.loginPageRef.clear()
+                stack.pop()
             }
         }
     }

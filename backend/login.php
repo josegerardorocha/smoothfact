@@ -5,6 +5,7 @@ require __DIR__ . '/db.php'; // shared DB connection
 session_start();
 header('Content-Type: application/json');
 
+
 // Read POST data
 $username = $_POST['username'] ?? '';
 $password = $_POST['password'] ?? '';

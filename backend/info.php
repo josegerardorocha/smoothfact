@@ -1,11 +1,6 @@
 <?php
-session_start();
 
-if (!isset($_SESSION['username'])) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Access denied']);
-    exit;
-}
+require_once "session_start.php";
 
 header('Content-Type: application/json');
 define('SmoothFact', true);
@@ -26,7 +21,10 @@ try {
                 'name'    => $company['name'] ?? '',
                 'address' => $company['address'] ?? '',
                 'nif'     => $company['nif'] ?? '',
-                'niss'    => $company['niss'] ?? ''
+                'niss'    => $company['niss'] ?? '',
+                'iban'    => $company['iban'] ?? '',
+                'banco'   => $company['banco'] ?? '',
+                'cae'     => $company['cae'] ?? ''
             ]);
         } else {
             echo json_encode([
@@ -34,7 +32,10 @@ try {
                 'name'    => '',
                 'address' => '',
                 'nif'     => '',
-                'niss'    => ''
+                'niss'    => '',
+                'iban'    => '',
+                'banco'   => '',
+                'cae'     => ''
             ]);
         }
         exit;
@@ -45,6 +46,9 @@ try {
         $companyAddress = $_POST['address'] ?? '';
         $companyNif     = $_POST['nif'] ?? '';
         $companyNiss    = $_POST['niss'] ?? '';
+        $companyIban    = $_POST['iban'] ?? '';
+        $companyBanco   = $_POST['banco'] ?? '';
+        $companyCae     = $_POST['cae'] ?? '';
 
         if ($companyName === '' || $companyAddress === '') {
             echo json_encode([
@@ -63,6 +67,9 @@ try {
                 'address'    => $companyAddress,
                 'nif'        => $companyNif,
                 'niss'       => $companyNiss,
+                'iban'       => $companyIban,
+                'banco'      => $companyBanco,
+                'cae'        => $companyCae,
                 'updated_at' => new MongoDB\BSON\UTCDateTime()
             ]],
             ['upsert' => true]

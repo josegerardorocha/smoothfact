@@ -10,6 +10,11 @@ RowLayout{
     property alias password: loginDialog.password
     signal loginSuccess(string username)
 
+    function clear() {
+        username = ""
+        password = ""
+    }
+
     Rectangle{
         id: container
         Layout.fillHeight: true

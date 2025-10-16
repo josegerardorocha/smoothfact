@@ -1,5 +1,7 @@
 <?php
 
+require_once "session_start.php";
+
 class NIF_NISS
 {
     // Sizes of NIF, NISS and NIB

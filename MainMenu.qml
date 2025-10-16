@@ -49,6 +49,11 @@ Rectangle {
                     }
                 }
                 Component {
+                    Item{
+                        property string color: "white"
+                    }
+                }
+                Component {
                     LogoutIcon {
                         color: "white"
                         fillColor: "transparent"
@@ -60,14 +65,13 @@ Rectangle {
             }
 
             Repeater {
-
                 model: [
-                    { label: "Info",          index: 0  },
-                    { label: "Invoice",       index: 1  },
-                    { label: "Bank Movement", index: 2  },
+                    { label: "Empresa",       index: 0  },
+                    { label: "Trabalhadores", index: 1  },
+                    { label: "Faturas",       index: 2  },
+                    { label: "Banco",         index: 3  },
                     { label: "Logout",        index: -1 }
                 ]
-
                 delegate: Component {
                     Item {
                         width: row.implicitWidth
@@ -132,14 +136,17 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-
+        currentIndex: 0
         InfoPage {
             id: infoPage
             username: root.username
+            Layout.fillWidth: true
         }
-
-        InvoicePage {
+        WorkersPage {
             id: invoicePage
+        }
+        InvoicePage {
+            id: workerspage
         }
 
         BankMovementPage {

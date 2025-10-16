@@ -1,13 +1,10 @@
 <?php
 
-session_start();
+require_once "session_start.php";
 
-if (!isset($_SESSION['username'])) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Access denied']);
-    exit;
-}
+require "nif_niss.php";
+$generator = new NIF_NISS();
 
-require "niss.php";
 header('Content-Type: application/json');
-echo json_encode(['value' => NISS::generate("12")]);
+$val = $generator->makeNISS("12");
+echo json_encode(['value' => $val]);

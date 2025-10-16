@@ -42,37 +42,9 @@ Rectangle{
             Layout.fillWidth: true
         }
 
-        Button {
+        CustomButton {
             id: submitButton
             text: "Submit"
-            implicitHeight: 48
-            implicitWidth: 160
-            Layout.alignment: Qt.AlignHCenter
-            flat: true
-
-
-            // center the text
-            contentItem: Text {
-                text: submitButton.text
-                font.pixelSize: 16
-                color: submitButton.down ? "white" : "green"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                anchors.fill: parent
-            }
-
-            // custom background with rounded corners & green border
-            background: Rectangle {
-                radius: 12
-                border.color: "#FF04AA6D"
-                border.width: 2
-                // Colors depending on state
-                color: submitButton.down ? "#FF04AA6D"
-                                         : submitButton.hovered ? "#AAFFAA"   // light green on hover
-                                                                : "transparent"
-
-                //Behavior on color { ColorAnimation { duration: 120 } }
-            }
             onClicked: {
                 var params = "username=" + encodeURIComponent(root.username) +
                         "&password=" + encodeURIComponent(root.password)
@@ -83,11 +55,11 @@ Rectangle{
                                          console.log("Login OK, user:", response.username)
                                          root.loginSuccess(response.username)
                                      } else {
-                                         console.log("Login failed")
+                                         console.log("Login failed: ", response ? response.message : "No response")
                                          errorAnim.restart()
                                      }
                                  }
-                )
+                                 )
             }
         }
         Text {

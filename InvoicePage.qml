@@ -10,34 +10,55 @@ Rectangle {
     Layout.fillHeight: true
     property string username: "User"
 
+    // RowLayout {
+    //     spacing: 20
+    //     CheckBox {
+    //         text: "Buy"
+    //         checked: invoiceType === "Buy"
+    //         enabled: editable
+    //         onToggled: if (checked) invoiceType = "Buy"
+    //     }
+    //     CheckBox {
+    //         text: "Sell"
+    //         checked: invoiceType === "Sell"
+    //         enabled: editable
+    //         onToggled: if (checked) invoiceType = "Sell"
+    //     }
+    // }
     RowLayout {
         anchors.fill: parent
         anchors.margins: 20
         spacing: 20
-        Button {
-            text: "Generate PDF"
-            anchors.bottom: parent.bottom
-            anchors.horizontalCenter: parent.horizontalCenter
-            onClicked: {
-                var params = "name=" + encodeURIComponent("John")
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            color: "transparent"
+            Button {
+                text: "Generate PDF"
+                // anchors.bottom: parent.bottom
+                // anchors.horizontalCenter: parent.horizontalCenter
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
+                onClicked: {
+                    var params = "name=" + encodeURIComponent("John")
 
-                HttpRequest.postBinary("pdfgen.php", params,
-                                       function(success, response) {
-                                           if (success) {
-                                               console.log("PDF received, size:", response.byteLength, "bytes")
+                    HttpRequest.postBinary("backend/invoice.php", params,
+                                           function(success, response) {
+                                               if (success) {
+                                                   console.log("PDF received, size:", response.byteLength, "bytes")
 
-                                               // Convert ArrayBuffer to Base64 data URI for PdfDocument
-                                               var uInt8Array = new Uint8Array(response)
-                                               var binary = ""
-                                               for (var i = 0; i < uInt8Array.length; i++) {
-                                                   binary += String.fromCharCode(uInt8Array[i])
+                                                   // Convert ArrayBuffer to Base64 data URI for PdfDocument
+                                                   var uInt8Array = new Uint8Array(response)
+                                                   var binary = ""
+                                                   for (var i = 0; i < uInt8Array.length; i++) {
+                                                       binary += String.fromCharCode(uInt8Array[i])
+                                                   }
+                                                   var base64 = Qt.btoa(binary)
+                                                   pdfDoc.source = "data:application/pdf;base64," + base64
+                                               } else {
+                                                   console.log("HttpRequest.postBinary Failed to load PDF")
                                                }
-                                               var base64 = Qt.btoa(binary)
-                                               pdfDoc.source = "data:application/pdf;base64," + base64
-                                           } else {
-                                               console.log("Failed to load PDF")
-                                           }
-                                       } )
+                                           } )
+                }
             }
         }
         // Text {
@@ -62,14 +83,20 @@ Rectangle {
             }
 
             // Top toolbar
-            Row {
+            RowLayout {
                 spacing: 8
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
                 height: 40
-                padding: 8
-                Rectangle { color: "#f0f0f0"; anchors.fill: parent; radius: 4; opacity: 0.9 }
+                //spacing: 8
+                Rectangle {
+                    color: "#f0f0f0";
+                    Layout.fillWidth: true;
+                    Layout.fillHeight: true;
+                    radius: 4;
+                    opacity: 0.9
+                }
 
                 Button { text: "Zoom -" ; onClicked: pdfView.renderScale = Math.max(0.1, pdfView.renderScale / 1.2) }
                 Button { text: "Zoom +" ; onClicked: pdfView.renderScale = Math.min(10, pdfView.renderScale * 1.2) }

@@ -1,4 +1,6 @@
 // --- HttpRequest.js ---
+.pragma library
+
 // Base URL for all requests
 const BASE_URL = "http://localhost/faturas/";
 
@@ -15,6 +17,7 @@ function post(endpoint, params, callback) {
                     var response = JSON.parse(xhr.responseText)
                     callback(true, response)
                 } catch (e) {
+                    console.log("xhr.responseText", xhr.responseText)
                     console.log("Error parsing JSON:", e)
                     callback(false, null)
                 }
@@ -70,6 +73,5 @@ function get(endpoint, callback) {
             }
         }
     }
-
     xhr.send()
 }
