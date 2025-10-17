@@ -5,10 +5,20 @@
 const BASE_URL = "http://localhost/faturas/";
 
 // POST request helper
-function post(endpoint, params, callback) {
+function post(endpoint, params, callback, requestHeaders) {
     var xhr = new XMLHttpRequest()
     xhr.open("POST", BASE_URL + endpoint)
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+
+    //xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+    if (requestHeaders) {
+        for (var header in requestHeaders) {
+            if (requestHeaders.hasOwnProperty(header)) {
+                xhr.setRequestHeader(header, requestHeaders[header])
+            }
+        }
+    } else {
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+    }
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -27,7 +37,6 @@ function post(endpoint, params, callback) {
             }
         }
     }
-
     xhr.send(params)
 }
 

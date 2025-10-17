@@ -144,6 +144,8 @@ Rectangle {
         }
         WorkersPage {
             id: invoicePage
+            username: root.username
+            Layout.fillWidth: true
         }
         InvoicePage {
             id: workerspage

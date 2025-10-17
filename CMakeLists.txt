@@ -35,6 +35,7 @@ qt_add_qml_module(appsmoothfact
         BankMovementPage.qml
         HttpRequest.js
         WorkersPage.qml
+        QML_FILES customcontrols/CustomMFCheckbox.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
