@@ -170,7 +170,7 @@ Item {
                         combo.currentIndex = index
                         root.text = delegate.text
                         combo.popup.close() // Close the popup after selection
-                        console.log("cae=", root.text)
+                        // console.log("cae=", root.text)
                     }
                 }
             }

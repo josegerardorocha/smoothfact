@@ -23,6 +23,7 @@ qt_add_qml_module(appsmoothfact
         customcontrols/CustomTextArea.qml
         customcontrols/CustomSwitch.qml
         customcontrols/CustomIbanCombo.qml
+        customcontrols/CustomMFCheckbox.qml
         customcontrols/fuse.min.js
         customcontrols/cae.js
         customcontrols/iban_prefix.js
@@ -35,7 +36,14 @@ qt_add_qml_module(appsmoothfact
         BankMovementPage.qml
         HttpRequest.js
         WorkersPage.qml
-        QML_FILES customcontrols/CustomMFCheckbox.qml
+        VatCheck.js
+        VatGen.js
+        InvoiceShowPDF.qml
+        InvoiceForm.qml
+    SOURCES
+        imgpdfprovider.h    imgpdfprovider.cpp
+        remotepdfrenderer.h remotepdfrenderer.cpp
+
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

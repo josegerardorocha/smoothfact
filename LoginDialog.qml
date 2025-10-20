@@ -52,7 +52,7 @@ Rectangle{
                 HttpRequest.post("backend/login.php", params,
                                  function(success, response) {
                                      if (success && response.success) {
-                                         console.log("Login OK, user:", response.username)
+                                         //console.log("Login OK, user:", response.username)
                                          root.loginSuccess(response.username)
                                      } else {
                                          console.log("Login failed: ", response ? response.message : "No response")

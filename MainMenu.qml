@@ -119,7 +119,7 @@ Rectangle {
                                     contentStack.currentIndex = modelData.index
                                     //menuText.color = modelData.index === contentStack.currentIndex ? "#FFD700" : "white"
                                 } else {
-                                    console.log("Logout clicked")
+                                    // console.log("Logout clicked")
                                     root.logout()
                                 }
                             }

@@ -60,7 +60,7 @@ RowLayout{
         id: loginDialog
         onLoginSuccess: (username) => {
                             root.loginSuccess(username)
-                            console.log("LoginForm: Login successful for user:", username)
+                            //console.log("LoginForm: Login successful for user:", username)
                         }
     }
 }

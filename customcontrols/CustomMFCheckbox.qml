@@ -1,6 +1,6 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
 Item {
     id: root
@@ -14,10 +14,10 @@ Item {
     implicitHeight: groupBox.height + labelBox.height / 2 + 1
     // width: implicitWidth
     // height: implicitHeight
-    Component.onCompleted: {
-        console.log("labelBox.height", labelBox.height, "groupBox.height", groupBox.height,
-                    "implicitHeight", implicitHeight);
-    }
+    // Component.onCompleted: {
+    //     console.log("labelBox.height", labelBox.height, "groupBox.height", groupBox.height,
+    //                 "implicitHeight", implicitHeight);
+    // }
 
     Text {
         id: titleLabel
@@ -77,19 +77,23 @@ Item {
 
             // Title (no anchors here!)
             RowLayout {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
                 id: contentRowLayout
                 spacing: 20
                 Layout.leftMargin: 6
                 RadioButton {
+                    Layout.alignment: Qt.AlignVCenter
                     id: maleRadio
-                    text: "Male"
+                    text: "Masculino"
                     //checked: true
                     font.pixelSize: 14
                     onClicked: femaleRadio.checked = !checked
                 }
                 RadioButton {
                     id: femaleRadio
-                    text: "Female"
+                    Layout.alignment: Qt.AlignVCenter
+                    text: "Feminino"
                     font.pixelSize: 14
                     onClicked: maleRadio.checked = !checked
                 }

@@ -33,7 +33,7 @@ ScrollView {
                 companyIban    = response.iban
                 companyBanco   = response.banco
                 companyCae     = response.cae
-                console.log("Data loaded:", JSON.stringify(response))
+                // console.log("Data loaded:", JSON.stringify(response))
             } else {
                 console.log("Failed to load data")
             }
@@ -50,10 +50,10 @@ ScrollView {
                 "&iban="    + encodeURIComponent(companyIban)         +
                 "&banco="   + encodeURIComponent(companyBanco)        +
                 "&cae="     + encodeURIComponent(companyCae)
-        console.log("submitData params=", params)
+        // console.log("submitData params=", params)
         HttpRequest.post("backend/info.php", params, function(success, response) {
             if (success) {
-                console.log("Update successful:", response)
+                // console.log("Update successful:", response)
             } else {
                 console.log("Update failed")
             }
@@ -64,7 +64,7 @@ ScrollView {
         HttpRequest.post("backend/generate_nif.php", params, function(success, response) {
             if (success) {
                 companyNif = response.value
-                console.log("NIF generated:", response.value)
+                // console.log("NIF generated:", response.value)
             } else {
                 console.log("NIF generation failed")
             }
@@ -75,19 +75,19 @@ ScrollView {
         HttpRequest.post("backend/generate_niss.php", params, function(success, response) {
             if (success) {
                 companyNiss = response.value
-                console.log("NISS generated:", response.value)
+                // console.log("NISS generated:", response.value)
             } else {
                 console.log("NISS generation failed")
             }
         })
     }
     function generateIban(prefix) {
-        console.log("Generating IBAN with prefix:", prefix)
+        // console.log("Generating IBAN with prefix:", prefix)
         var params = "&prefix=" + encodeURIComponent(prefix) + ".0000"
         HttpRequest.post("backend/generate_iban.php", params, function(success, response) {
             if (success) {
                 companyIban = response.value
-                console.log("IBAN generated:", response.value)
+                // console.log("IBAN generated:", response.value)
             } else {
                 console.log("IBAN generation failed")
             }
