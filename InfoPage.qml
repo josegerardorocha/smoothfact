@@ -1,19 +1,21 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+//import Smoothfact
 import "customcontrols"
+
 
 ScrollView {
     id: root
     property string username: "User"
     property bool   editable: false
-    property string companyName: ""
-    property string companyAddress: ""
-    property string companyNif: ""
-    property string companyNiss: ""
-    property string companyIban: ""
-    property string companyBanco: ""
-    property string companyCae: ""
+    // property string companyName: ""
+    // property string companyAddress: ""
+    // property string companyNif: ""
+    // property string companyNiss: ""
+    // property string companyIban: ""
+    // property string companyBanco: ""
+    // property string companyCae: ""
 
     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
     ScrollBar.vertical.policy: ScrollBar.AsNeeded
@@ -22,48 +24,12 @@ ScrollView {
     contentHeight: formLayout.implicitHeight + 80
     clip: true
 
-    // --- Load data from server ---
-    function loadData() {
-        HttpRequest.get("backend/info.php", function(success, response) {
-            if (success) {
-                companyName    = response.name
-                companyAddress = response.address
-                companyNif     = response.nif
-                companyNiss    = response.niss
-                companyIban    = response.iban
-                companyBanco   = response.banco
-                companyCae     = response.cae
-                // console.log("Data loaded:", JSON.stringify(response))
-            } else {
-                console.log("Failed to load data")
-            }
-        })
-    }
-
     // --- Submit updated data to server ---
-    function submitData() {
-        var params =
-                "&name="    + encodeURIComponent(companyName)         +
-                "&address=" + encodeURIComponent(companyAddress)      +
-                "&nif="     + encodeURIComponent(companyNif)          +
-                "&niss="    + encodeURIComponent(companyNiss)         +
-                "&iban="    + encodeURIComponent(companyIban)         +
-                "&banco="   + encodeURIComponent(companyBanco)        +
-                "&cae="     + encodeURIComponent(companyCae)
-        // console.log("submitData params=", params)
-        HttpRequest.post("backend/info.php", params, function(success, response) {
-            if (success) {
-                // console.log("Update successful:", response)
-            } else {
-                console.log("Update failed")
-            }
-        })
-    }
     function generateNif() {
         var params = "&prefix=563";
         HttpRequest.post("backend/generate_nif.php", params, function(success, response) {
             if (success) {
-                companyNif = response.value
+                CompanyData.nif = response.value
                 // console.log("NIF generated:", response.value)
             } else {
                 console.log("NIF generation failed")
@@ -74,7 +40,7 @@ ScrollView {
         var params = "&prefix=25";
         HttpRequest.post("backend/generate_niss.php", params, function(success, response) {
             if (success) {
-                companyNiss = response.value
+                CompanyData.niss = response.value
                 // console.log("NISS generated:", response.value)
             } else {
                 console.log("NISS generation failed")
@@ -86,14 +52,14 @@ ScrollView {
         var params = "&prefix=" + encodeURIComponent(prefix) + ".0000"
         HttpRequest.post("backend/generate_iban.php", params, function(success, response) {
             if (success) {
-                companyIban = response.value
+                CompanyData.iban = response.value
                 // console.log("IBAN generated:", response.value)
             } else {
                 console.log("IBAN generation failed")
             }
         })
     }
-    Component.onCompleted: loadData()
+    Component.onCompleted: CompanyData.loadData();
 
     ColumnLayout {
         id: formLayout
@@ -117,16 +83,16 @@ ScrollView {
             id: nameTextArea
             placeholderText: "Company Name"
             Layout.fillWidth: true
-            text: companyName
-            onTextChanged: if (editable) companyName = text
+            text: CompanyData.name
+            onTextChanged: if (editable) CompanyData.companyName = text
             enabled: editable
         }
         CustomTextArea {
             id: addressTextArea
             Layout.fillWidth: true
             placeholderText: "Company Address"
-            text: companyAddress
-            onTextChanged: if (editable) companyAddress = text
+            text: CompanyData.address
+            onTextChanged: if (editable) CompanyData.companyAddress = text
             enabled: editable
         }
         RowLayout {
@@ -138,9 +104,9 @@ ScrollView {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignTop
                 placeholderText: "NIF"
-                text: companyNif
+                text: CompanyData.nif
                 inputMask: "999999999"   // optional
-                onTextChanged: if (editable) companyNif = text
+                onTextChanged: if (editable) CompanyData.companyNif = text
                 enabled: editable
             }
             CustomButton {
@@ -159,9 +125,9 @@ ScrollView {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignTop
                 placeholderText: "NISS"
-                text: companyNiss
+                text: CompanyData.niss
                 inputMask: "99999999999" // optional
-                onTextChanged: if (editable) companyNiss = text
+                onTextChanged: if (editable) CompanyData.companyNiss = text
                 enabled: editable
             }
             CustomButton {
@@ -181,8 +147,8 @@ ScrollView {
                 Layout.preferredWidth: 3
                 Layout.alignment: Qt.AlignTop
                 placeholderText: "IBAN"
-                text: companyIban
-                onTextChanged: if (editable) companyIban = text
+                text: CompanyData.iban
+                onTextChanged: if (editable) CompanyData.companyIban = text
                 enabled: editable
             }
             CustomIbanCombo {
@@ -191,8 +157,8 @@ ScrollView {
                 Layout.fillWidth: true
                 Layout.preferredWidth: 2
                 Layout.alignment: Qt.AlignTop
-                text: companyBanco
-                onTextChanged: if (editable) companyBanco = text
+                text: CompanyData.banco
+                onTextChanged: if (editable) CompanyData.companyBanco = text
                 enabled: editable
             }
             CustomButton {
@@ -207,8 +173,8 @@ ScrollView {
             id: caeCombo
             placeholderText: "Classificação CAE"
             Layout.fillWidth: true
-            text: companyCae
-            onTextChanged: if (editable) companyCae = text
+            text: CompanyData.cae
+            onTextChanged: if (editable) CompanyData.companyCae = text
             enabled: editable
         }
 
@@ -224,7 +190,7 @@ ScrollView {
             CustomButton {
                 text: "Submit"
                 enabled: editable
-                onClicked: submitData()
+                onClicked: CompanyData.submitData();
             }
         }
     }

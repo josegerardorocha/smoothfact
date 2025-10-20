@@ -13,7 +13,7 @@ Button {
     contentItem: Text {
         text: submitButton.text
         font.pixelSize: 16
-        color: submitButton.down ? "white" : "green"
+        color: submitButton.enabled ? (submitButton.down ? "white" : "green") : "lightgray"
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         anchors.fill: parent
@@ -22,7 +22,7 @@ Button {
     // custom background with rounded corners & green border
     background: Rectangle {
         radius: 12
-        border.color: "#FF04AA6D"
+        border.color: submitButton.enabled ? "#FF04AA6D" : "gray"
         border.width: 2
         // Colors depending on state
         color: submitButton.down ? "#FF04AA6D"

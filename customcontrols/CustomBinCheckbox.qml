@@ -4,9 +4,11 @@ import QtQuick.Layouts
 
 Item {
     id: root
-    property alias maleChecked: maleRadio.checked
-    property alias femaleChecked: femaleRadio.checked
-    property string title: "Gender"
+    property alias b1Checked: b1Radio.checked
+    property alias b2Checked: b2Radio.checked
+    property string title: ""
+    property string b1Label: ""
+    property string b2Label: ""
     // border.width: 1
     // border.color: "red"
 
@@ -22,7 +24,7 @@ Item {
     Text {
         id: titleLabel
         text: root.title
-        color: (maleRadio.activeFocus || femaleRadio.activeFocus)
+        color: (b1Radio.activeFocus || b2Radio.activeFocus)
                ? "#FF04AA6D" : "gray"
         font.pixelSize: 12
         // Layout.alignment: Qt.AlignLeft  // ✅ proper layout alignment
@@ -62,7 +64,7 @@ Item {
         anchors.topMargin: labelBox.height / 2 + 1
         radius: 4
         border.width: 1
-        border.color: (maleRadio.activeFocus || femaleRadio.activeFocus)
+        border.color: (b1Radio.activeFocus || b2Radio.activeFocus)
                       ? "#FF04AA6D" : "gray"
         color: "transparent"
         width: contentRowLayout.implicitWidth + 8
@@ -84,18 +86,18 @@ Item {
                 Layout.leftMargin: 6
                 RadioButton {
                     Layout.alignment: Qt.AlignVCenter
-                    id: maleRadio
-                    text: "Masculino"
+                    id: b1Radio
+                    text: b1Label
                     //checked: true
                     font.pixelSize: 14
-                    onClicked: femaleRadio.checked = !checked
+                    onClicked: b2Radio.checked = !checked
                 }
                 RadioButton {
-                    id: femaleRadio
+                    id: b2Radio
                     Layout.alignment: Qt.AlignVCenter
-                    text: "Feminino"
+                    text: b2Label
                     font.pixelSize: 14
-                    onClicked: maleRadio.checked = !checked
+                    onClicked: b1Radio.checked = !checked
                 }
             }
         }

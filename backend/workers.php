@@ -33,6 +33,10 @@ try {
             $worker['created_at'] = $timestamp;
         }
 
+        // Delete all existing documents
+        $deleteResult = $collection->deleteMany([]);
+
+        // Insert new data
         $result = $collection->insertMany($data);
 
         echo json_encode([

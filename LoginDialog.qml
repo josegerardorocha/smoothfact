@@ -44,6 +44,7 @@ Rectangle{
 
         CustomButton {
             id: submitButton
+            enabled: usernameField.text.length > 0 && passwordField.text.length > 0
             text: "Submit"
             onClicked: {
                 var params = "username=" + encodeURIComponent(root.username) +

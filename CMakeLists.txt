@@ -12,6 +12,9 @@ qt_add_executable(appsmoothfact
     main.cpp
 )
 
+set_source_files_properties(CompanyData.qml
+    PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+
 qt_add_qml_module(appsmoothfact
     URI Smoothfact
     VERSION 1.0
@@ -23,7 +26,7 @@ qt_add_qml_module(appsmoothfact
         customcontrols/CustomTextArea.qml
         customcontrols/CustomSwitch.qml
         customcontrols/CustomIbanCombo.qml
-        customcontrols/CustomMFCheckbox.qml
+        customcontrols/CustomBinCheckbox.qml
         customcontrols/fuse.min.js
         customcontrols/cae.js
         customcontrols/iban_prefix.js
@@ -43,8 +46,15 @@ qt_add_qml_module(appsmoothfact
     SOURCES
         imgpdfprovider.h    imgpdfprovider.cpp
         remotepdfrenderer.h remotepdfrenderer.cpp
+        QML_FILES customcontrols/country_codes.js
+        QML_FILES customcontrols/CustomCountryCombo.qml
+        QML_FILES CountryAddresses.js
+        QML_FILES CompanyNames.js
+        QML_FILES InvoiceShowData.qml
+        QML_FILES CompanyData.qml
 
 )
+
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

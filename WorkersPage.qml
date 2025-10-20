@@ -24,7 +24,7 @@ ScrollView {
         // Implement worker generation logic here
         //textModel.append({"text": `<b>New item</b><br>Added at ${new Date().toLocaleTimeString()}`})
         var params =
-                "&gender=" + (genderCheckbox.maleChecked ? "male" : "female") +
+                "&gender=" + (genderCheckbox.b1Checked ? "male" : "female") +
                 "&nif_prefix=" + "267" +
                 "&niss_prefix=" + "12" +
                 "&iban_prefix=" + ibanCombo.bancoPrefix + "0000";
@@ -167,12 +167,14 @@ ScrollView {
             spacing: 10
             Layout.leftMargin: 10
             Layout.rightMargin: 10
-            CustomMFCheckbox{
+            CustomBinCheckbox{
                 id: genderCheckbox
                 // Layout.fillWidth: true
                 // Layout.preferredWidth: 1
-                title: "Gender"
-                maleChecked: true
+                title: "Género"
+                b1Label: "Masculino"
+                b2Label: "Feminino"
+                b1Checked: true
                 Layout.alignment: Qt.AlignBottom
             }
 
