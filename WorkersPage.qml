@@ -15,7 +15,7 @@ ScrollView {
     clip: true
 
     function generateWorker() {
-        console.log("Generate Worker button clicked")
+        //console.log("Generate Worker button clicked", ibanCombo.bancoPrefix)
         if(ibanCombo.bancoPrefix === "") {
             errorText.text = "Selecionar banco"
             errorAnim.restart()

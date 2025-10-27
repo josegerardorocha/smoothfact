@@ -14,13 +14,110 @@ use Endroid\QrCode\Label\Font\OpenSans;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
 
+$json = file_get_contents('php://input');
+$postData = json_decode($json, true);
+
+/*
+QJsonObject({
+"header":{
+    "buyer":{
+        "VAT":"123456789",
+        "address":"123 Sample Street, Lisbon",
+        "company":"Sample Company Lda",
+        "country":"Portugal",
+        "countryCode":"PT"
+    },
+    "country":"PT",
+    "date":"25/02/2024",
+    "number":"FT 2024/001",
+    "hash":"ABCD1234EFGH5678IJKL9012MNOP3456",
+    "iban":"PT50000201231234567890154",
+    "atcud":"JJRD3W6T-3",
+    "seller":{
+        "VAT":"987654321",
+        "address":"456 Another Ave, Porto",
+        "company":"Another Company SA",
+        "country":"Portugal",
+        "countryCode":"PT"
+    },
+    "tipoOperacao":"buy"
+},
+"totais":{
+    "totalSemIva":300,
+    "totalDeIva":75,
+    "baseIvaIsento":0,
+    "baseIvaRed":100,
+    "baseIvaInt":100,
+    "baseIvaNorm":200,
+    "descontoTotal":15,
+    "ivaRed":6,
+    "ivaInt": 13,
+    "ivaNorm":23,
+    "totalGeral":337
+    "motivoIsencao":"",
+},
+"rows":[
+    {
+        "desconto":0,
+        "designacao":"Product A",
+        "iva":23,
+        "motivoIsencao":"",
+        "preco":50,
+        "quantidade":2,
+        "tipo":"P",
+        "total":123
+    },
+    {"desconto":10,"designacao":"Product B","iva":23,"motivoIsencao":"","preco":100,"quantidade":1,"tipo":"P","total":110.7},
+    {"desconto":5,"designacao":"Service C","iva":6,"motivoIsencao":"","preco":20,"quantidade":5,"tipo":"S","total":95}]})
+postData = {
+        "header": {
+            "tipoOperacao": tipoOperacao,
+            "country": country,
+            "buyer": {
+                "company": company,
+                "address": address,
+                "country": country,
+                "VAT":     vat
+            },
+            "seller": {
+                "company": company,
+                "address": address,
+                "country": country,
+                "VAT":     vat
+            },
+            "date": formatDate( new Date()),
+            "number": invoiceNumber()
+        },
+        "rows": [
+        {
+            "tipo": tipo,
+            "designacao": designacao,
+            "quantidade": quantidade,
+            "preco": preco,
+            "desconto": desconto,
+            "iva": iva,
+            "total": total,
+            "motivoIsencao": motivoIsencao
+        }
+        ]
+    }
+*/
+$username = $postData['username'] ?? 'Unknown User';
+$tipoOperacao = $postData['header']['tipoOperacao'] ?? 'Buy';
+$country = $postData['header']['country'] ?? 'Unknown Country';
+$buyer = $postData['header']['buyer'] ?? [];
+$seller = $postData['header']['seller'] ?? [];
+$date = $postData['header']['date'] ?? date('Y-m-d');
+$number = $postData['header']['number'] ?? '0000';
+$rows = $postData['rows'] ?? [];
+
 // Input data
-$type = $_POST['type'] ?? 'Buy';
-$companyName = $_POST['name'] ?? 'Unknown Company';
-$companyAddress = $_POST['address'] ?? 'No Address';
-$companyNif = $_POST['nif'] ?? '---';
-$companyNiss = $_POST['niss'] ?? '---';
-$username = $_SESSION['username']; // current logged-in user
+// $type = $_POST['type'] ?? 'Buy';
+// $companyName = $_POST['name'] ?? 'Unknown Company';
+// $companyAddress = $_POST['address'] ?? 'No Address';
+// $companyNif = $_POST['nif'] ?? '---';
+// $companyNiss = $_POST['niss'] ?? '---';
+// $username = $_SESSION['username']; // current logged-in user
 
 // Build QR code
 $builder = new Builder(

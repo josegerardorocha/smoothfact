@@ -63,7 +63,6 @@ Rectangle{
                 fillMode: Image.Pad  // keeps real image size (no scaling)
                 smooth: true
                 cache: false
-                // width: parent.width  <-- remove this!
             }
         }
     }

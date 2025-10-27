@@ -109,8 +109,10 @@ Item {
             }
         }
         onCurrentIndexChanged: {
-            if (currentIndex >= 0)
+            if (currentIndex >= 0){
                 root.bancoPrefix = model.get(currentIndex).prefixo
+                //console.log("onCurrentIndexChanged, root.bancoPrefix=", root.bancoPrefix)
+            }
         }
     }
     // Floating placeholder

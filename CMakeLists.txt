@@ -19,7 +19,6 @@ qt_add_qml_module(appsmoothfact
     URI Smoothfact
     VERSION 1.0
     QML_FILES
-        images/LogoutIcon.qml
         customcontrols/CustomTextField.qml
         customcontrols/CustomCaeCombo.qml
         customcontrols/CustomButton.qml
@@ -33,7 +32,6 @@ qt_add_qml_module(appsmoothfact
         Main.qml
         LoginForm.qml
         LoginDialog.qml
-        MainMenu.qml
         InfoPage.qml
         InvoicePage.qml
         BankMovementPage.qml
@@ -43,16 +41,23 @@ qt_add_qml_module(appsmoothfact
         VatGen.js
         InvoiceShowPDF.qml
         InvoiceForm.qml
+        customcontrols/country_codes.js
+        customcontrols/CustomCountryCombo.qml
+        CountryAddresses.js
+        CompanyNames.js
+        InvoiceShowData.qml
+        CompanyData.qml
+        menu/MainMenu.qml
+        menu/MainStack.qml
+        menu/LogoutIcon.qml
+        sellinvoice/SellInvoicePage.qml
+        sellinvoice/SellInvoiceForm.qml
     SOURCES
         imgpdfprovider.h    imgpdfprovider.cpp
         remotepdfrenderer.h remotepdfrenderer.cpp
-        QML_FILES customcontrols/country_codes.js
-        QML_FILES customcontrols/CustomCountryCombo.qml
-        QML_FILES CountryAddresses.js
-        QML_FILES CompanyNames.js
-        QML_FILES InvoiceShowData.qml
-        QML_FILES CompanyData.qml
-
+        QML_FILES InvoiceShowHeader.qml
+        QML_FILES InvoiceShowRows.qml
+        QML_FILES InvoiceShowTail.qml
 )
 
 
@@ -60,7 +65,7 @@ qt_add_qml_module(appsmoothfact
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
 set_target_properties(appsmoothfact PROPERTIES
-#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appsmoothfact
+    #    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appsmoothfact
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE

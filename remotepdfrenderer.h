@@ -7,6 +7,7 @@
 #include <QPdfDocumentRenderOptions>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QJsonObject>
 // #include <QImage>
 // #include <QBuffer>
 // #include <QQmlEngine>
@@ -25,6 +26,9 @@ class RemotePdfRenderer: public QObject {
     Q_PROPERTY(int imageVersion READ imageVersion NOTIFY imageVersionChanged)
     Q_PROPERTY(qreal zoom READ zoom WRITE setZoom NOTIFY zoomChanged)
     Q_PROPERTY(int zoomLevel READ zoomLevel WRITE setZoomLevel NOTIFY zoomChanged)
+    // write a Q_PROPERTY to store a json object. Call it postData
+    Q_PROPERTY(QJsonObject postData WRITE setPostData NOTIFY postDataChanged)
+
 public:
     const qreal ZOOM_LEVEL[10]{0.25, 0.5, 0.75, 0.90, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0};
 
@@ -50,6 +54,10 @@ public:
     void setZoom(qreal zoom);
     int zoomLevel() const { return m_zoomLevel; }
     void setZoomLevel(int level);
+    void setPostData(const QJsonObject &data) {
+        m_postData = data;
+        emit postDataChanged();
+    }
 
 signals:
     void urlToLoadChanged();
@@ -59,6 +67,7 @@ signals:
     void pageCountChanged();
     void imageVersionChanged();
     void zoomChanged(qreal zoom);
+    void postDataChanged();
 
 private slots:
     void onReplyFinished(QNetworkReply *reply);
@@ -78,6 +87,7 @@ private:
     int m_imageVersion;
     qreal m_zoom;
     int m_zoomLevel;
+    QJsonObject m_postData;
 };
 
 #endif // REMOTEPDFDOCUMENT_H

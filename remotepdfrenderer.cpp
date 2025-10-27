@@ -24,9 +24,12 @@ void RemotePdfRenderer::setUrlToLoad(const QUrl &url)
     m_url = url;
     emit urlToLoadChanged();
 
-    if (!m_url.isEmpty() && m_url.isValid()) {
+    if (!m_url.isEmpty() && m_url.isValid() && (!m_postData.isEmpty())) {
         QNetworkRequest req(m_url);
-        auto *reply = m_manager.get(req);
+        req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+        QJsonDocument doc(m_postData);
+        QByteArray postData = doc.toJson();
+        auto *reply = m_manager.post(req, postData);
         connect(reply, &QNetworkReply::downloadProgress, this, &RemotePdfRenderer::downloadProgress);
     }
 }

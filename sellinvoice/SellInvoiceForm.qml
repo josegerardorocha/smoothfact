@@ -1,15 +1,18 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import "customcontrols"
+import "../customcontrols"
 
 Rectangle {
     border.width: 1
     border.color: "lightgray"
     width: 600
+    property string tipoOperacao: "venda"
+    property bool headerVisible: true
 
-    signal addHeader(bool isCompra, string country, string company, string address, string vat)
-
+    signal addHeader(string tipoOperacao, string country, string company, string address, string vat)
+    signal addRow(bool tipo, string designacao, real quantidade, real preco, real desconto,
+                  real iva, real total, string motivoIsencao)
     Layout.fillWidth: true
     Layout.fillHeight: true
     color: "transparent"
@@ -33,22 +36,29 @@ Rectangle {
         console.log("Generated VAT:", vat)
         vatTextField.text = vat
     }
+    function toNumber(value) {
+        var num = parseFloat(value)
+        return (!isNaN(num) && isFinite(num)) ? num : 0
+    }
+    function computeTotalLine() {
+        let quantidade = toNumber(quantidadeTextField.text)
+        let preco = toNumber(precoTextField.text)
+        let desconto = toNumber(descontoTextField.text)
+        let iva = toNumber(ivaTextField.text)
+
+        let totalBeforeTax = quantidade * preco * (1 - desconto / 100)
+        let totalWithTax = totalBeforeTax * (1 + iva / 100)
+
+        //rowDataColumn.totalLine = totalWithTax
+        return totalWithTax.toFixed(2)
+    }
 
     ColumnLayout {
         id: headerColumn
         anchors.fill: parent
         anchors.margins: 12
         spacing: 12
-        CustomBinCheckbox{
-            id: tipoCheckbox
-            // Layout.fillWidth: true
-            // Layout.preferredWidth: 1
-            title: "Tipo"
-            b1Label: "Compra"
-            b2Label: "Venda"
-            b1Checked: true
-            //Layout.alignment: Qt.AlignBottom
-        }
+        visible: headerVisible
         CustomCountryCombo {
             id: countryCombo
             placeholderText: "País"
@@ -66,9 +76,6 @@ Rectangle {
                 //Layout.preferredWidth: 3
                 Layout.alignment: Qt.AlignTop
                 placeholderText: "Empresa"
-                //text: companyIban
-                //onTextChanged: if (editable) companyIban = text
-                //enabled: editable
             }
             CustomButton {
                 implicitHeight: addressTextArea.implicitHeight-10
@@ -87,10 +94,6 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignTop
                 placeholderText: "Morada"
-                // text: companyNif
-                // inputMask: "999999999"   // optional
-                // onTextChanged: if (editable) companyNif = text
-                // enabled: editable
             }
             CustomButton {
                 implicitHeight: addressTextArea.implicitHeight-10
@@ -109,10 +112,6 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignTop
                 placeholderText: "VAT"
-                // text: companyNif
-                // inputMask: "999999999"   // optional
-                // onTextChanged: if (editable) companyNif = text
-                // enabled: editable
             }
             CustomButton {
                 implicitHeight: vatTextField.implicitHeight-10
@@ -129,15 +128,16 @@ Rectangle {
                      vatTextField.text !== "" && countryCombo.countryCode !== ""
             onClicked: {
                 console.log("Adicionar header com os seguintes dados:")
-                console.log("Tipo (Compra/Venda):", tipoCheckbox.b1Checked ? "Compra" : "Venda")
+                console.log("Tipo (Compra/Venda):", tipoOperacao)
                 console.log("País:", countryCombo.country)
                 console.log("Empresa:", companyTextField.text)
                 console.log("Morada:", addressTextArea.text)
                 console.log("VAT:", vatTextField.text)
-                addHeader(tipoCheckbox.b1Checked, countryCombo.country, companyTextField.text,
+                addHeader(tipoOperacao, countryCombo.country, companyTextField.text,
                           addressTextArea.text, vatTextField.text)
-                headerColumn.visible = false
-                rowDataColumn.visible = true
+                //headerColumn.visible = false
+                //rowDataColumn.visible = true
+                headerVisible = false
             }
         }
     }
@@ -146,13 +146,84 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: 12
         spacing: 12
-        visible: false
+        visible: !headerVisible
+        property real totalLine: 0.0
 
+        CustomBinCheckbox{
+            id: tipoCheckbox
+            // Layout.fillWidth: true
+            // Layout.preferredWidth: 1
+            title: "Tipo"
+            b1Label: "Serviço"
+            b2Label: "Produto"
+            b1Checked: true
+        }
+        CustomTextField{
+            id: designacaoTextField
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
+            placeholderText: "Designação"
+            onTextChanged: { rowDataColumn.totalLine = computeTotalLine(); }
+        }
+        CustomTextField{
+            id: quantidadeTextField
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
+            placeholderText: "Quantidade"
+            onTextChanged: { rowDataColumn.totalLine = computeTotalLine(); }
+        }
+        CustomTextField{
+            id: precoTextField
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
+            placeholderText: "Preço"
+            onTextChanged: { rowDataColumn.totalLine = computeTotalLine(); }
+        }
+        CustomTextField{
+            id: descontoTextField
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
+            placeholderText: "Desconto (%)"
+            onTextChanged:{ rowDataColumn.totalLine = computeTotalLine(); }
+        }
+        CustomTextField{
+            id: ivaTextField
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
+            placeholderText: "Iva (%)"
+            onTextChanged: { rowDataColumn.totalLine = computeTotalLine(); }
+        }
+        CustomTextField{
+            id: isencaoTextField
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
+            placeholderText: "Motivo da isenção do IVA"
+            visible: toNumber(ivaTextField.text) <= 0
+        }
+        Text{
+            textFormat: Text.RichText
+            text: "<b>Total: " + rowDataColumn.totalLine + "</b>"
+            Layout.alignment: Qt.AlignRight
+        }
+        Item{
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+        }
         CustomButton {
             text: "Adicionar linha"
             Layout.alignment: Qt.AlignRight | Qt.AlignBottom
             onClicked: {
                 console.log("Adicionar linha:")
+                addRow(
+                            tipoCheckbox.b1Checked,
+                            designacaoTextField.text,
+                            toNumber(quantidadeTextField.text),
+                            toNumber(precoTextField.text),
+                            toNumber(descontoTextField.text),
+                            toNumber(ivaTextField.text),
+                            rowDataColumn.totalLine,
+                            isencaoTextField.text
+                            )
             }
         }
     }
