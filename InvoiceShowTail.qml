@@ -5,10 +5,11 @@ import "customcontrols"
 ColumnLayout{
     Layout.fillWidth: true
     spacing: 4
-    property var headerData : null
-    property var rowModel : null
+    // property var headerData: null
+    // property var rowModel:   null
+    property var totalsData: null
     // property int totalUpdate: 0
-    property int nrows: rowModel.count
+    //property int nrows: rowModel.count
 
     // onHeaderDataChanged: {
     //     console.log("++++++++++++++++++ InvoiceShowTail onHeaderDataChanged", JSON.stringify(headerData))
@@ -18,46 +19,24 @@ ColumnLayout{
     //     console.log("++++++++++++++++++ InvoiceShowTail onRowModelChanged", JSON.stringify(rowModel))
     //     updateTotals()
     // }
-    onNrowsChanged: {
-        for(let i=0; i<rowModel.count; i++){
-            let row = rowModel.get(i)
-            console.log("++++++++++++++++++ InvoiceShowTail onNrowsChanged", JSON.stringify(row))
-        }
+    // onNrowsChanged: {
+    //     for(let i=0; i<rowModel.count; i++){
+    //         let row = rowModel.get(i)
+    //         console.log("++++++++++++++++++ InvoiceShowTail onNrowsChanged", JSON.stringify(row))
+    //     }
+    //     updateTotals()
+    // }
+    onTotalsDataChanged: {
+        console.log("++++++++++++++++++ InvoiceShowTail onTotalsDataChanged", JSON.stringify(totalsData))
         updateTotals()
     }
 
     function updateTotals(){
-        if(headerData && rowModel){
-            let subtotal = 0.0
-            let totalDiscount = 0.0
-            let totalVat = 0.0
-            let motivoIsencao =  rowModel.get(0).motivoIsencao
-            for(let i=0; i<rowModel.count; i++){
-                let row = rowModel.get(i)
-
-                // "designacao":"mot",
-                // "quantidade":1,
-                // "preco":24,
-                // "desconto":0,
-                // "iva":23,
-                // "total":29.52,
-
-
-                let lineTotal = row.quantidade * row.preco
-                let lineDiscount = lineTotal * (row.desconto / 100.0)
-                let lineVat = (lineTotal - lineDiscount) * (row.iva / 100.0)
-                subtotal += lineTotal
-                totalDiscount += lineDiscount
-                totalVat += lineVat
-            }
-            // let vatRate = headerData.vatRate ? headerData.vatRate : 0.0
-            // let vatAmount = (subtotal - totalDiscount) * (vatRate / 100.0)
-            let total = subtotal - totalDiscount + totalVat
-
-            subtotalText.text = "Subtotal: " + subtotal.toFixed(2) + " €"
-            discountText.text = "Desconto: " + totalDiscount.toFixed(2) + " €"
-            vatText.text = "IVA: " + (motivoIsencao !== "" ? ("Isento " + motivoIsencao) : (totalVat.toFixed(2) + " €") )
-            totalText.text = "<b>Total: " + total.toFixed(2) + " €</b>"
+        if(totalsData){
+            subtotalText.text = "Subtotal: " + totalsData.totalSemIva.toFixed(2) + " €"
+            discountText.text = "Desconto: " + totalsData.descontoTotal.toFixed(2) + " €"
+            vatText.text = "IVA: " + totalsData.totalDeIva.toFixed(2) + " €"
+            totalText.text = "<b>Total: " + totalsData.totalGeral.toFixed(2) + " €</b>"
         }
     }
 

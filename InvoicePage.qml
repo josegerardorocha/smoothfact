@@ -51,19 +51,19 @@ Rectangle {
                 + "</html>"
         console.log("showData.header", showData.header)
     }
-    RemotePdfRenderer {
-        id: pdfRenderer
-        onPageCountChanged: {
-            console.log("++++++++++ Page count changed:", pageCount)
-            viewer.visible = pageCount > 0
-        }
-        onDownloadProgress: (bytesReceived, bytesTotal) => {
-                                console.log("++++++++++++++ Download progress:", bytesReceived, "bytes of", bytesTotal)
-                            }
-        onCurrentPageChanged: {
-            console.log("++++++++++++++ Current page changed:", currentPage)
-        }
-    }
+    // RemotePdfRenderer {
+    //     id: pdfRenderer
+    //     onPageCountChanged: {
+    //         console.log("++++++++++ Page count changed:", pageCount)
+    //         viewer.visible = pageCount > 0
+    //     }
+    //     onDownloadProgress: (bytesReceived, bytesTotal) => {
+    //                             console.log("++++++++++++++ Download progress:", bytesReceived, "bytes of", bytesTotal)
+    //                         }
+    //     onCurrentPageChanged: {
+    //         console.log("++++++++++++++ Current page changed:", currentPage)
+    //     }
+    // }
 
     //SplitView {
     //    id: mainSplitView
@@ -101,7 +101,7 @@ Rectangle {
             id: viewer
             Layout.fillWidth: true
             Layout.fillHeight: true
-            renderer: pdfRenderer
+            //renderer: pdfRenderer
             visible: false
         }
     }

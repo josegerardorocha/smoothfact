@@ -20,7 +20,7 @@ Item{
                 Layout.fillWidth: true
                 Layout.preferredWidth: 1
                 textFormat: Text.RichText
-                text: "tipo"
+                text: "Tipo"
                 font.pointSize: 12
                 color: "#333"
             }
@@ -28,7 +28,7 @@ Item{
                 Layout.fillWidth: true
                 Layout.preferredWidth: 3
                 textFormat: Text.RichText
-                text: "designacao"
+                text: "Designacao"
                 font.pointSize: 12
                 color: "#333"
             }
@@ -52,7 +52,7 @@ Item{
                 Layout.fillWidth: true
                 Layout.preferredWidth: 1
                 textFormat: Text.RichText
-                text: "Desc. (%)"
+                text: "Desc.(%)"
                 font.pointSize: 12
                 color: "#333"
             }
@@ -96,7 +96,7 @@ Item{
                         Layout.fillWidth: true
                         Layout.preferredWidth: 1
                         textFormat: Text.RichText
-                        text: model.tipo ? "S" : "P"
+                        text: model.tipo
                         font.pointSize: 12
                         color: "#333"
                     }
@@ -153,7 +153,7 @@ Item{
                     CustomButton {
                         Layout.fillWidth: true
                         Layout.preferredWidth: 1
-                        text: "Delete"
+                        text: "Apagar"
                         onClicked: listView.model.remove(index)
                         Layout.alignment: Qt.AlignBottom
                     }

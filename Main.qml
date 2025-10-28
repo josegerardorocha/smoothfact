@@ -6,7 +6,7 @@ import "menu"
 ApplicationWindow {
     id: root
     width: 1400
-    height: 600
+    height: 700
     visible: true
     title: qsTr("SmoothFact")
 

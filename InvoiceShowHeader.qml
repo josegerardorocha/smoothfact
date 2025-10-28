@@ -32,7 +32,7 @@ ColumnLayout {  // Header
     }
     function formatHTMLDateNumber(date, number){
         //console.log("++++++++++++++++++ formatHTMLDate", JSON.stringify(date))
-        return "<b>Data: </b>" + date.day + "/" + date.month + "/" + date.year + "<br>"
+        return "<b>Data: </b>" + date + "<br>"
             + "<font pointSize='18'><b>Fatura número:</b> " + number + "</font>"
     }
     GridLayout {

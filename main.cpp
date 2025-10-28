@@ -2,7 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <QQmlContext>
-#include "imgpdfprovider.h"
+#include "pdfimageProvider.h"
 
 int main(int argc, char *argv[])
 {
@@ -12,9 +12,10 @@ int main(int argc, char *argv[])
     QQuickStyle::setStyle("Fusion");
     QQmlApplicationEngine engine;
 
-    auto *provider = new ImgPdfProvider;
-    engine.addImageProvider("imgPdfProvider", provider);
-    engine.rootContext()->setContextProperty("imgPdfProvider", provider);
+    // Create and register the image provider
+    PDFImageProvider *imageProvider = new PDFImageProvider();
+    engine.addImageProvider("pdf", imageProvider);
+    engine.rootContext()->setContextProperty("imageProvider", imageProvider);
 
     QObject::connect(
         &engine,

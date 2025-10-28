@@ -47,17 +47,19 @@ qt_add_qml_module(appsmoothfact
         CompanyNames.js
         InvoiceShowData.qml
         CompanyData.qml
+        InvoiceShowHeader.qml
+        InvoiceShowRows.qml
+        InvoiceShowTail.qml
         menu/MainMenu.qml
         menu/MainStack.qml
         menu/LogoutIcon.qml
         sellinvoice/SellInvoicePage.qml
         sellinvoice/SellInvoiceForm.qml
     SOURCES
-        imgpdfprovider.h    imgpdfprovider.cpp
-        remotepdfrenderer.h remotepdfrenderer.cpp
-        QML_FILES InvoiceShowHeader.qml
-        QML_FILES InvoiceShowRows.qml
-        QML_FILES InvoiceShowTail.qml
+        pdfcontroller.h       pdfcontroller.cpp
+        pdfimageProvider.h    pdfimageprovider.cpp
+        qrcode.h              qrcode.cpp
+        QML_FILES customcontrols/CustomDateField.qml
 )
 
 

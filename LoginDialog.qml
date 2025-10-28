@@ -13,6 +13,23 @@ Rectangle{
 
     signal loginSuccess(string username)
 
+    function submitClicked() {
+        submitButton.simulatePress()
+        var params = "username=" + encodeURIComponent(root.username) +
+                "&password=" + encodeURIComponent(root.password)
+
+        HttpRequest.post("backend/login.php", params,
+                         function(success, response) {
+                             if (success && response.success) {
+                                 //console.log("Login OK, user:", response.username)
+                                 root.loginSuccess(response.username)
+                             } else {
+                                 console.log("Login failed: ", response ? response.message : "No response")
+                                 errorAnim.restart()
+                             }
+                         }
+                         )
+    }
     ColumnLayout {
         anchors.centerIn: parent
         anchors.topMargin: 100
@@ -33,6 +50,10 @@ Rectangle{
             id: usernameField
             placeholderText: "Username"
             Layout.fillWidth: true
+            Keys.onReturnPressed: {
+                if (submitButton.enabled)
+                    root.submitClicked()
+            }
         }
 
         CustomTextField {
@@ -40,28 +61,17 @@ Rectangle{
             placeholderText: "Password"
             echoMode: TextInput.Password
             Layout.fillWidth: true
+            Keys.onReturnPressed: {
+                if (submitButton.enabled)
+                    root.submitClicked()
+            }
         }
 
         CustomButton {
             id: submitButton
             enabled: usernameField.text.length > 0 && passwordField.text.length > 0
             text: "Submit"
-            onClicked: {
-                var params = "username=" + encodeURIComponent(root.username) +
-                        "&password=" + encodeURIComponent(root.password)
-
-                HttpRequest.post("backend/login.php", params,
-                                 function(success, response) {
-                                     if (success && response.success) {
-                                         //console.log("Login OK, user:", response.username)
-                                         root.loginSuccess(response.username)
-                                     } else {
-                                         console.log("Login failed: ", response ? response.message : "No response")
-                                         errorAnim.restart()
-                                     }
-                                 }
-                                 )
-            }
+            onClicked: root.submitClicked()
         }
         Text {
             id: errorText

@@ -92,7 +92,7 @@ Item {
         opacity: visible ? 1 : 0
 
         implicitHeight: submenuRow.implicitHeight + 16
-        height: implicitHeight
+        height: implicitHeight + 10
 
         RowLayout {
             id: submenuRow

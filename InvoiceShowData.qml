@@ -7,6 +7,7 @@ ScrollView {
     id: root
     property string username: "User"
     property var header
+    property var totals
     property alias model: invoiceRowModel
     signal clearInvoiceData()
     signal generatePdf()
@@ -44,9 +45,10 @@ ScrollView {
         }
         InvoiceShowTail {
             id: invoiceTail
+            totalsData: root.totals
             Layout.fillWidth: true
-            headerData: root.header
-            rowModel: invoiceRowModel
+            //headerData: root.header
+            //rowModel: invoiceRowModel
             visible: root.header ? true : false
         }
 

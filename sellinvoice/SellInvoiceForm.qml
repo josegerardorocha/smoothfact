@@ -4,15 +4,15 @@ import QtQuick.Layouts
 import "../customcontrols"
 
 Rectangle {
+    id: root
     border.width: 1
     border.color: "lightgray"
     width: 600
     property string tipoOperacao: "venda"
     property bool headerVisible: true
 
-    signal addHeader(string tipoOperacao, string country, string company, string address, string vat)
-    signal addRow(bool tipo, string designacao, real quantidade, real preco, real desconto,
-                  real iva, real total, string motivoIsencao)
+    signal addHeader(var data)
+    signal addRow(var data)
     Layout.fillWidth: true
     Layout.fillHeight: true
     color: "transparent"
@@ -59,6 +59,12 @@ Rectangle {
         anchors.margins: 12
         spacing: 12
         visible: headerVisible
+        CustomDateField{
+            id: dateTextField
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
+            placeholderText: "Data"
+        }
         CustomCountryCombo {
             id: countryCombo
             placeholderText: "País"
@@ -111,7 +117,7 @@ Rectangle {
                 id: vatTextField
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignTop
-                placeholderText: "VAT"
+                placeholderText: "NIF"
             }
             CustomButton {
                 implicitHeight: vatTextField.implicitHeight-10
@@ -121,24 +127,39 @@ Rectangle {
                 Layout.alignment: Qt.AlignTop
             }
         }
+        Item{
+            Layout.fillHeight: true
+        }
         CustomButton {
             text: "Adicionar"
             Layout.alignment: Qt.AlignRight | Qt.AlignBottom
-            enabled: companyTextField.text !== "" && addressTextArea.text !== "" &&
+            enabled: dateTextField.validDate && companyTextField.text !== "" && addressTextArea.text !== "" &&
                      vatTextField.text !== "" && countryCombo.countryCode !== ""
             onClicked: {
-                console.log("Adicionar header com os seguintes dados:")
-                console.log("Tipo (Compra/Venda):", tipoOperacao)
-                console.log("País:", countryCombo.country)
-                console.log("Empresa:", companyTextField.text)
-                console.log("Morada:", addressTextArea.text)
-                console.log("VAT:", vatTextField.text)
-                addHeader(tipoOperacao, countryCombo.country, companyTextField.text,
-                          addressTextArea.text, vatTextField.text)
+                // console.log("Adicionar header com os seguintes dados:")
+                // console.log("Tipo (Compra/Venda):", tipoOperacao)
+                // console.log("País:", countryCombo.country)
+                // console.log("Empresa:", companyTextField.text)
+                // console.log("Morada:", addressTextArea.text)
+                // console.log("VAT:", vatTextField.text)
+                var data = {
+                    "tipoOperacao": root.tipoOperacao,
+                    "country": countryCombo.country,
+                    "countryCode": countryCombo.countryCode,
+                    "company": companyTextField.text,
+                    "address": addressTextArea.text,
+                    "nif": vatTextField.text,
+                    "date": dateTextField.text
+                }
+
+                addHeader(data)
                 //headerColumn.visible = false
                 //rowDataColumn.visible = true
                 headerVisible = false
             }
+        }
+        Item{
+            Layout.fillHeight: true
         }
     }
     ColumnLayout {
@@ -163,7 +184,6 @@ Rectangle {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignTop
             placeholderText: "Designação"
-            onTextChanged: { rowDataColumn.totalLine = computeTotalLine(); }
         }
         CustomTextField{
             id: quantidadeTextField
@@ -212,18 +232,26 @@ Rectangle {
         CustomButton {
             text: "Adicionar linha"
             Layout.alignment: Qt.AlignRight | Qt.AlignBottom
+            enabled: {
+                designacaoTextField.text !== "" &&
+                toNumber(quantidadeTextField.text) > 0 &&
+                toNumber(precoTextField.text) >= 0 &&
+                (toNumber(ivaTextField.text) > 0 || isencaoTextField.text !== "")
+            }
+
             onClicked: {
                 console.log("Adicionar linha:")
-                addRow(
-                            tipoCheckbox.b1Checked,
-                            designacaoTextField.text,
-                            toNumber(quantidadeTextField.text),
-                            toNumber(precoTextField.text),
-                            toNumber(descontoTextField.text),
-                            toNumber(ivaTextField.text),
-                            rowDataColumn.totalLine,
-                            isencaoTextField.text
-                            )
+                var data = {
+                    "tipo": tipoCheckbox.b1Checked ? 'S': 'P',
+                    "designacao": designacaoTextField.text,
+                    "quantidade": toNumber(quantidadeTextField.text),
+                    "preco": toNumber(precoTextField.text),
+                    "desconto": toNumber(descontoTextField.text),
+                    "iva": toNumber(ivaTextField.text),
+                    "total": rowDataColumn.totalLine,
+                    "motivoIsencao": isencaoTextField.text
+                }
+                addRow(data)
             }
         }
     }
