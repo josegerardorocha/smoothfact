@@ -7,6 +7,8 @@
 // #include <QDateTime>
 #include <QJsonArray>
 #include <QFile>
+#include <QTextDocument>
+
 // Simple QR generator using Nayuki’s library
 // (Download https://github.com/nayuki/QR-Code-generator and include QrCode.hpp)
 #include "qrcode.h"
@@ -153,108 +155,110 @@ QImage PDFController::generateQrCode(const QString &text)
     return image;
 }
 
-void PDFController::generateSamplePDF() {
+void PDFController::drawCustomerData(const QJsonObject &customer, QPainter &painter, const QPoint &pos)
+{
+    QRect pageRect = painter.viewport();
+    QRect rect(pos.x(), pos.y(), pageRect.width()*1/2-100, 180);
+    QString company = customer["company"].toString();
+    QString address = customer["address"].toString();
+    QString country = customer["country"].toString();
+    QString vat = customer["VAT"].toString();
 
+    QString text = QString() +
+                    "<table border='1' cellspacing='0' cellpadding='6' width='100%'>"
+                    "  <tr><td>"
+                    "    <div style='text-align: left;'>"
+                    "      <span style='font-size:18pt; font-weight:bold;'>" + company + "</span><br>"
+                    "      <span style='font-size:12pt;'>"
+                                + address + "<br>"
+                                + country + "<br>"
+                    "           <b>NIF:</b> " + vat + "</span>"
+                    "    </div>"
+                    "  </td></tr>"
+                    "</table>";
+    QTextDocument doc;
+    doc.setHtml(text);
+    doc.setTextWidth(rect.width());  // so it wraps properly
+
+    painter.save();
+    painter.translate(rect.topLeft());  // move to target rect
+    doc.drawContents(&painter);
+    painter.restore();
+}
+
+void PDFController::drawDateNumber(const QString &date, const QString &number,
+                                   QPainter &painter, const QPoint &pos)
+{
+    QRect pageRect = painter.viewport();
+    QRect rect(pos.x(), pos.y(), pageRect.width()*1/3-100, 180);
+    QString text = QString() +
+                    "<table border='0' cellspacing='0' cellpadding='6' width='100%'>"
+                    "  <tr><td>"
+                    "    <div style='text-align: left;'>"
+                    "      <span style='font-size:18pt; font-weight:bold;'>" + number + "</span>"
+                    "      <span style='font-size:16pt;'>" + date + "</span>"
+                    "    </div>"
+                    "  </td></tr>"
+                    "</table>";
+    QTextDocument doc;
+    doc.setHtml(text);
+    doc.setTextWidth(rect.width());  // so it wraps properly
+    painter.save();
+    painter.translate(rect.topLeft());  // move to target rect
+    doc.drawContents(&painter);
+    painter.restore();
+}
+
+void PDFController::generateVendaPDF(QPainter &painter)
+{
     const QJsonObject header = m_pdfData["header"].toObject();
     const QJsonObject totals = m_pdfData["totais"].toObject();
     auto isZero = [](double x) {
         constexpr double tol = 1e-6;
         return std::fabs(x) < tol;
     };
-
-    QByteArray pdfData;
-    QBuffer buffer(&pdfData);
-    buffer.open(QIODevice::WriteOnly);
-
-    // Create PDF writer
-    QPdfWriter writer(&buffer);
-    writer.setPageSize(QPageSize::A4);
-    writer.setResolution(150);
-    writer.setTitle(header["number"].toString());
-    writer.setCreator("SmoothFact by SmoothPurple");
-
-    // Get page rect for drawing
-    QPainter painter(&writer);
     QRect pageRect = painter.viewport();
 
-    // Page 1
-    qDebug() << m_pdfData;
+    qDebug() << "m_pdfData=" << m_pdfData;
     painter.fillRect(pageRect, Qt::white);
 
-    QFont titleFont("Arial", 24, QFont::Bold);
-    painter.setFont(titleFont);
-    painter.setPen(Qt::black);
-    painter.drawText(100, 200, header["seller"].toObject()["company"].toString());
+    drawCustomerData(header["seller"].toObject(), painter, QPoint(100, 160));
+    drawDateNumber(header["date"].toString(), header["number"].toString(),
+                   painter, QPoint(pageRect.width()*2/3, 160));
+    drawCustomerData(header["buyer"].toObject(), painter, QPoint(pageRect.width()/2, 330));
 
-    QFont normalFont("Arial", 12);
-    painter.setFont(normalFont);
-    painter.drawText(100, 240, header["seller"].toObject()["address"].toString());
-    painter.drawText(100, 270, header["seller"].toObject()["country"].toString());
-    painter.drawText(100, 300, "NIF: " + header["seller"].toObject()["VAT"].toString());
+    QString text =
+        "<table border='0' cellspacing='0' cellpadding='0' width='100%'>"
+        "  <tr>"
+        "    <td width='10%'><div style='text-align: left;'>Tipo</div></td>"
+        "    <td width='40%'><div style='text-align: left;'>Designação</div></td>"
+        "    <td width='10%'><div style='text-align: right;'>Quant.</div></td>"
+        "    <td width='10%'><div style='text-align: right;'>Preço</div></td>"
+        "    <td width='10%'><div style='text-align: right;'>Desc.</div></td>"
+        "    <td width='10%'><div style='text-align: right;'>IVA</div></td>"
+        "    <td width='10%'><div style='text-align: right;'>Total</div></td>"
+        "  </tr>"
+        "</table>"
+        ;
+    QTextDocument doc;
+    int yposition = 510;
+    QRect tableRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
+    doc.setHtml(text);
+    doc.setTextWidth(tableRect.width());
+    painter.save();
+    painter.translate(tableRect.topLeft());
+    doc.drawContents(&painter);
+    qDebug() << "doc.size():" << doc.size();
+    painter.restore();
+    yposition += int(doc.size().height());
+    painter.drawLine(100, yposition, pageRect.width() - 100, yposition);
 
-    // number and date
-    painter.drawText(720, 270, header["number"].toString());
-    painter.drawText(720, 300, header["date"].toString());
-
-    // buyer info
-    painter.drawText(720, 390, header["buyer"].toObject()["company"].toString());
-    painter.drawText(720, 420, header["buyer"].toObject()["address"].toString());
-    painter.drawText(720, 450, header["buyer"].toObject()["country"].toString());
-    painter.drawText(720, 480, "NIF: " + header["buyer"].toObject()["VAT"].toString());
-
-    // line
-    QFont smallArialFont("Arial", 10);
-    painter.setFont(smallArialFont);
-    int right=pageRect.width() - 100;
-    QRect tipoRect      (100, 540, 80,  30);
-    QRect designacaoRect(170, 540, 380, 30);
-    QRect qtdRect       (right-510, 540, 80,  30);
-    QRect precoRect     (right-400, 540, 100, 30);
-    QRect descRect      (right-260, 540, 80,  30);
-    QRect ivaRect       (right-180, 540, 80,  30);
-    QRect totalRect     (right-100, 540, 100, 30);
-    painter.drawText(tipoRect,       Qt::AlignLeft  | Qt::AlignVCenter, "Tipo");
-    painter.drawText(designacaoRect, Qt::AlignLeft  | Qt::AlignVCenter, "Designação");
-    painter.drawText(qtdRect,        Qt::AlignRight | Qt::AlignVCenter, "Quant.");
-    painter.drawText(precoRect,      Qt::AlignRight | Qt::AlignVCenter, "Preço");
-    painter.drawText(descRect,       Qt::AlignRight | Qt::AlignVCenter, "Desc.");
-    painter.drawText(ivaRect,        Qt::AlignRight | Qt::AlignVCenter, "IVA");
-    painter.drawText(totalRect,      Qt::AlignRight | Qt::AlignVCenter, "Total");
-    painter.setPen(QPen(Qt::black, 1));
-    //painter.setBrush(QBrush(Qt::lightGray));
-    painter.drawLine(100, 575, pageRect.width() - 100, 575);
     // rows
-    QJsonArray rowsArray = m_pdfData["rows"].toArray();
-    int y = 575;
-    int rowHeight = 30;
-    // QFont smallFont("Courier New", 10);  // monospace helps alignment visually
-    painter.setFont(smallArialFont);
     QChar alineaIsencao('a');
+    QJsonArray rowsArray = m_pdfData["rows"].toArray();
+    text = "<table border='0' cellspacing='0' cellpadding='0' width='100%'>";
     for(const QJsonValue &value : std::as_const(rowsArray)){
         QJsonObject row = value.toObject();
-
-        QRect tipoRect      (100, y, 80,  rowHeight);
-        QRect designacaoRect(170, y, 380, rowHeight);
-        QRect qtdRect       (right-510, y, 80,  rowHeight);
-        QRect precoRect     (right-400, y, 100, rowHeight);
-        QRect descRect      (right-260, y, 80,  rowHeight);
-        QRect ivaRect       (right-180, y, 80,  rowHeight);
-        QRect totalRect     (right-100, y, 100, rowHeight);
-
-        // Left-aligned text
-        painter.drawText(tipoRect, Qt::AlignLeft | Qt::AlignVCenter, row["tipo"].toString());
-        painter.drawText(designacaoRect, Qt::AlignLeft | Qt::AlignVCenter, row["designacao"].toString());
-
-        // Right-aligned numbers
-        painter.drawText(qtdRect, Qt::AlignRight | Qt::AlignVCenter,
-                         QString::number(row["quantidade"].toDouble(), 'f', 0));
-
-        painter.drawText(precoRect, Qt::AlignRight | Qt::AlignVCenter,
-                         QString("%1€").arg(row["preco"].toDouble(), 8, 'f', 2, QChar(' ')));
-
-        painter.drawText(descRect, Qt::AlignRight | Qt::AlignVCenter,
-                         QString("%1%").arg(row["desconto"].toDouble(), 8, 'f', 2, QChar(' ')));
-
         QString ivaText;
         if(isZero(row["iva"].toDouble())){
             ivaText = QString("%1%") + "(" + alineaIsencao + ")";
@@ -262,82 +266,93 @@ void PDFController::generateSamplePDF() {
         }
         else
             ivaText = QString("%1%");
-
-        painter.drawText(ivaRect, Qt::AlignRight | Qt::AlignVCenter,
-                         ivaText.arg(row["iva"].toDouble(), 3, 'f', 0, QChar(' ')));
-
-        painter.drawText(totalRect, Qt::AlignRight | Qt::AlignVCenter,
-                         QString("%1€").arg(row["total"].toDouble(), 8, 'f', 2, QChar(' ')));
-
-        y += rowHeight;
+        text +=
+            "  <tr>"
+            "    <td width='10%'><div style='text-align: left;'>" + row["tipo"].toString() + "</div></td>"
+            "    <td width='40%'><div style='text-align: left;'>" + row["designacao"].toString() + "</div></td>"
+            "    <td width='10%'><div style='text-align: right;'>" + QString::number(row["quantidade"].toDouble(), 'f', 0) + "</div></td>"
+            "    <td width='10%'><div style='text-align: right;'>" + QString("%1€").arg(row["preco"].toDouble(), 8, 'f', 2, QChar(' '))+"</div></td>"
+            "    <td width='10%'><div style='text-align: right;'>" + QString("%1%").arg(row["desconto"].toDouble(), 8, 'f', 2, QChar(' '))+"</div></td>"
+            "    <td width='10%'><div style='text-align: right;'>" + ivaText.arg(row["iva"].toDouble(), 3, 'f', 0, QChar(' '))+"</div></td>"
+            "    <td width='10%'><div style='text-align: right;'>" + QString("%1€").arg(row["total"].toDouble(), 8, 'f', 2, QChar(' '))+"</div></td>"
+            "  </tr>"
+            ;
     }
+    text += "</table>";
 
+    tableRect = QRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
+    qDebug() << "Table rect:" << tableRect;
+    doc.setHtml(text);
+    doc.setTextWidth(tableRect.width());
+    painter.save();
+    painter.translate(tableRect.topLeft());
+    doc.drawContents(&painter);
+    yposition += int(doc.size().height());
+    painter.restore();
+    painter.drawLine(100, yposition, pageRect.width() - 100, yposition);
+
+    // motivo isenção
     alineaIsencao = 'a';
-    int isencoesY = y + rowHeight;
+    text =
+        "<table border='0' cellspacing='0' cellpadding='0' width='100%'>"
+        "<tr>"
+           "<td width='80%' valign='top'>"
+           "<table border='1' cellspacing='0' cellpadding='4' width='100%'>";
+
     for(const QJsonValue &value : std::as_const(rowsArray)){
         QJsonObject row = value.toObject();
         if(isZero(row["iva"].toDouble())){
-            painter.drawText(100, isencoesY, QString("(") + alineaIsencao + ") - " +
-                                                 row["motivoIsencao"].toString());
+            text += "<tr><td style='text-align: left;'>";
+            text += QString("(") + alineaIsencao + ") - " + row["motivoIsencao"].toString() + "</td></tr>";
             alineaIsencao = QChar(alineaIsencao.unicode() + 1);
-            isencoesY += rowHeight;
         }
     }
-    // // Draw some shapes
-    // painter.setPen(QPen(Qt::blue, 3));
-    // painter.setBrush(QBrush(Qt::lightGray));
-    // painter.drawRect(100, 450, 200, 100);
+    text += "</table></td>";
 
-    // painter.setPen(QPen(Qt::red, 3));
-    // painter.setBrush(QBrush(Qt::yellow));
-    // painter.drawEllipse(350, 450, 150, 150);
+    // totais
+    text += "<td width='20%'valign='top'>"
+        "<table border='1' cellspacing='0' cellpadding='4' width='100%'>"
+        "<tr>"
+        "<td width='50%' align='right'>Total sem iva:</td>"
+        "<td width='50%' align='right'>" + QString("%1€").arg(totals["totalSemIva"].toDouble(),   8, 'f', 2, QChar(' ')) + "</td>"
+        "</tr>"
+        "<tr>"
+        "<td width='50%' align='right'>Desconto:</td>"
+        "<td width='50%' align='right'>" + QString("%1€").arg(totals["descontoTotal"].toDouble(),   8, 'f', 2, QChar(' ')) + "</td>"
+        "</tr>"
+        "<tr>"
+        "<td width='50%' align='right'>Valor de IVA:</td>"
+        "<td width='50%' align='right'>" + QString("%1€").arg(totals["totalDeIva"].toDouble(),   8, 'f', 2, QChar(' ')) + "</td>"
+        "</tr>"
+        "<tr>"
+        "<td width='50%' align='right'><b>Total com IVA:</b></td>"
+        "<td width='50%' align='right'><b>" + QString("%1€").arg(totals["totalGeral"].toDouble(),   8, 'f', 2, QChar(' ')) + "</b></td>"
+        "</tr>"
+        ;
+    text += "</table>";
 
-    painter.drawLine(100,  y, pageRect.width() - 100, y);
-    y+=10;
-    QRect totalSemIva   (right-380, y, 280, rowHeight);
-    QRect totalSemIvaVal(right-100, y, 100, rowHeight);
-    y+=rowHeight;
-    QRect desconto      (right-380, y, 280, rowHeight);
-    QRect descontoVal   (right-100, y, 100, rowHeight);
-    y+=rowHeight;
-    QRect valorDeIva    (right-380, y, 280, rowHeight);
-    QRect valorDeIvaVal (right-100, y, 100, rowHeight);
-    y+=rowHeight;
-    QRect totalComIva   (right-380, y, 280,  rowHeight);
-    QRect totalComIvaVal(right-100, y, 100,  rowHeight);
-    painter.drawText(totalSemIva,    Qt::AlignRight  | Qt::AlignVCenter, "Total sem IVA:");
-    painter.drawText(desconto,       Qt::AlignRight  | Qt::AlignVCenter, "Desconto:");
-    painter.drawText(valorDeIva,     Qt::AlignRight  | Qt::AlignVCenter, "Valor de IVA:");
-    painter.drawText(totalComIva,    Qt::AlignRight  | Qt::AlignVCenter, "Total com IVA:");
+    text += "</td></tr></table>";
 
-    qDebug() << "----Totals: " << totals;
-    qDebug() << "----header: " << header;
-    painter.drawText(totalSemIvaVal, Qt::AlignRight  | Qt::AlignVCenter,
-                     QString("%1€").arg(totals["totalSemIva"].toDouble(),   8, 'f', 2, QChar(' ')));
-    painter.drawText(descontoVal,    Qt::AlignRight  | Qt::AlignVCenter,
-                     QString("%1€").arg(totals["descontoTotal"].toDouble(), 8, 'f', 2, QChar(' ')));
-    painter.drawText(valorDeIvaVal,  Qt::AlignRight  | Qt::AlignVCenter,
-                     QString("%1€").arg(totals["totalDeIva"].toDouble(),    8, 'f', 2, QChar(' ')));
-    painter.drawText(totalComIvaVal, Qt::AlignRight  | Qt::AlignVCenter,
-                     QString("%1€").arg(totals["totalGeral"].toDouble(),    8, 'f', 2, QChar(' ')));
+    tableRect = QRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
+    doc.setHtml(text);
+    doc.setTextWidth(tableRect.width());
+    painter.save();
+    painter.translate(tableRect.topLeft());
+    doc.drawContents(&painter);
+    painter.restore();
 
 
-    // Generate and draw QR code
-    int qrcodeX = pageRect.width()*2/3;
-    painter.setFont(smallArialFont);
+
+    // QR code
     QString qrs = computeInvoiceQRCode(m_pdfData);
     QImage qr = generateQrCode(qrs);
-    y = pageRect.height() - 100 - qr.height();
-    painter.drawImage(QPointF(qrcodeX + 50, y), qr);
+    QByteArray byteArray;
+    QBuffer buffer(&byteArray);
+    buffer.open(QIODevice::WriteOnly);
+    qr.save(&buffer, "PNG");
+    QString base64 = QString::fromLatin1(byteArray.toBase64().data());
 
-    QRect atcudRect(qrcodeX+50, y - rowHeight, qr.width(), rowHeight);
-    painter.drawText(atcudRect, Qt::AlignCenter | Qt::AlignVCenter,
-                     "ATCUD: " + header["atcud"].toString());
-
-    // Resumo do IVA
-    painter.drawText(100, y, "Resumo do IVA");
-    y+=10;
-    painter.drawLine(100, y, qrcodeX, y);
+    // resumo do iva e desenho do qr code
     double taxasIva[]{
         0.0,
         totals["ivaRed"].toDouble(),
@@ -351,136 +366,101 @@ void PDFController::generateSamplePDF() {
         totals["baseIvaNorm"].toDouble()
     };
 
-    QRect taxaIva(120, y, 80, rowHeight);
-    QRect baseIva(qrcodeX/2, y, 100, rowHeight);
-    QRect valorIva(qrcodeX - 120, y, 100, rowHeight);
-    painter.drawText(taxaIva,    Qt::AlignRight  | Qt::AlignVCenter, "Taxa IVA");
-    painter.drawText(baseIva,    Qt::AlignRight  | Qt::AlignVCenter, "Valor base");
-    painter.drawText(valorIva,   Qt::AlignRight  | Qt::AlignVCenter, "Valor IVA");
-    y+=rowHeight;
+    text =
+        "<table border='0' cellspacing='0' cellpadding='0' width='100%'>"
+        "<tr>"
+        "    <td width='60%' valign='top'>"
+        "        <b>Resumo do IVA</b><br>"
+        "        <table border='1' cellspacing='0' cellpadding='4' width='100%'>"
+        "            <tr>"
+        "                <td width='34%' align='left'>Taxa IVA</td>"
+        "                <td width='33%' align='left'>Valor base</td>"
+        "                <td width='33%' align='left'>Valor IVA</td>"
+        "            </tr>";
+
     for(int i=0; i<4; ++i){
         if(!isZero(baseesIva[i])){
-            QRect taxaIvaVal(120, y, 80, rowHeight);
-            QRect baseIvaVal(qrcodeX/2, y, 100, rowHeight);
-            QRect valorIvaVal(qrcodeX - 120, y, 100, rowHeight);
-
-            painter.drawText(taxaIvaVal,  Qt::AlignRight  | Qt::AlignVCenter,
-                             QString("%1%").arg(taxasIva[i], 3, 'f', 0, QChar(' ')));
-            painter.drawText(baseIvaVal,  Qt::AlignRight  | Qt::AlignVCenter,
-                             QString("%1€").arg(baseesIva[i], 8, 'f', 2, QChar(' ')));
             double valorIvaCalc = baseesIva[i] * taxasIva[i] / 100.0;
-            painter.drawText(valorIvaVal, Qt::AlignRight  | Qt::AlignVCenter,
-                             QString("%1€").arg(valorIvaCalc, 8, 'f', 2, QChar(' ')));
-            y+=rowHeight;
+            text += QString() +
+                "<tr>"
+                "    <td width='34%' align='left'>" + QString::number(taxasIva[i], 'f', 2) + "%</td>"
+                "    <td width='33%' align='left'>" + QString::number(baseesIva[i], 'f', 2) + "</td>"
+                "    <td width='33%' align='left'>" + QString::number(valorIvaCalc, 'f', 2) + "</td>"
+                "</tr>";
         }
     }
-    painter.drawLine(100, y, qrcodeX, y);
-    y += rowHeight;
-    painter.drawText(100, y, "0r9y - Processado por programa não certificado - SmoothFact");
-    y += rowHeight;
-    painter.drawText(100, y, "Serve apenas para fins educativos.");
+    QString qrStr = QString("data:image/png;base64,") + base64;
+    text +=
+        "        </table>"
+        "    </td>"
+        "    <td width='40%' align='right' valign='top'>ATCUD: " + header["atcud"].toString() + "<br>"
+        "        <img src=\"" + qrStr + "\" alt='QR Code'></td>"
+        "</tr>"
+        "</table>"
+        "0r9y - Processado por programa não certificado - SmoothFact<br>"
+        "Serve apenas para fins pedagógicos.";
 
+    yposition = pageRect.height() - 200 - qr.height();
+    tableRect = QRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
+    doc.setHtml(text);
+    doc.setTextWidth(tableRect.width());
+    painter.save();
+    painter.translate(tableRect.topLeft());
+    doc.drawContents(&painter);
+    painter.restore();
+}
 
+void PDFController::generateMultirriscosPDF(QPainter &painter)
+{
+    // pageRect QRect(0,0 1197x1712);
+/*
+    m_pdfData["dataInicio"]
+    m_pdfData["premio"]
+    m_pdfData["impostoSelo"]
+    m_pdfData["total"]
+ */
+    const QJsonObject header = m_pdfData["header"].toObject();
+    auto isZero = [](double x) {
+        constexpr double tol = 1e-6;
+        return std::fabs(x) < tol;
+    };
+    QRect pageRect = painter.viewport();
 
-    // // Page 2
-    // writer.newPage();
-    // painter.fillRect(pageRect, Qt::white);
+    // Page 1
+    qDebug() << "m_pdfData=" << m_pdfData;
+    painter.fillRect(pageRect, Qt::white);
 
-    // painter.setFont(titleFont);
-    // painter.setPen(Qt::darkBlue);
-    // painter.drawText(100, 200, "Page 2 - Charts");
+    drawCustomerData(header["seller"].toObject(), painter, QPoint(100, 160));
+    drawDateNumber(header["date"].toString(), header["number"].toString(),
+                   painter, QPoint(pageRect.width()*2/3, 160));
+    drawCustomerData(header["buyer"].toObject(), painter, QPoint(pageRect.width()/2, 330));
+}
 
-    // // Draw a simple bar chart
-    // painter.setFont(normalFont);
-    // painter.setPen(Qt::black);
-    // painter.drawText(100, 300, "Sample Bar Chart:");
+void PDFController::generateSamplePDF()
+{
+    QByteArray pdfData;
+    QBuffer buffer(&pdfData);
+    buffer.open(QIODevice::WriteOnly);
 
-    // int barWidth = 60;
-    // int barSpacing = 80;
-    // int startX = 100;
-    // int baseY = 600;
+    // Create PDF writer
+    QPdfWriter writer(&buffer);
+    writer.setPageSize(QPageSize::A4);
+    writer.setResolution(150);
+    const QJsonObject header = m_pdfData["header"].toObject();
+    writer.setTitle(header["number"].toString());
+    writer.setCreator("SmoothFact by SmoothPurple");
 
-    // QStringList labels = {"Q1", "Q2", "Q3", "Q4"};
-    // QList<int> values = {120, 200, 150, 250};
-    // QList<QColor> colors = {Qt::red, Qt::green, Qt::blue, Qt::magenta};
+    // Get page rect for drawing
+    QPainter painter(&writer);
 
-    // for (int i = 0; i < labels.size(); ++i) {
-    //     int x = startX + i * barSpacing;
-    //     int height = values[i];
-
-    //     painter.fillRect(x, baseY - height, barWidth, height, colors[i]);
-    //     painter.setPen(Qt::black);
-    //     painter.drawText(x + barWidth/2 - 10, baseY + 30, labels[i]);
-    //     painter.drawText(x + barWidth/2 - 15, baseY - height - 10, QString::number(values[i]));
-    // }
-
-    // // Page 3
-    // writer.newPage();
-    // painter.fillRect(pageRect, Qt::white);
-
-    // painter.setFont(titleFont);
-    // painter.setPen(Qt::darkGreen);
-    // painter.drawText(100, 200, "Page 3 - Table");
-
-    // // Draw a simple table
-    // painter.setFont(normalFont);
-    // painter.setPen(QPen(Qt::black, 1));
-
-    // int tableX = 100;
-    // int tableY = 300;
-    // int cellWidth = 150;
-    // int cellHeight = 40;
-    // int rows = 5;
-    // int cols = 3;
-
-    // QStringList headers = {"Name", "Value", "Status"};
-    // QVector<QStringList> data = {
-    //     {"Item 1", "100", "Active"},
-    //     {"Item 2", "200", "Pending"},
-    //     {"Item 3", "150", "Active"},
-    //     {"Item 4", "75", "Inactive"}
-    // };
-
-    // // Draw headers
-    // painter.fillRect(tableX, tableY, cellWidth * cols, cellHeight, Qt::lightGray);
-    // for (int col = 0; col < cols; ++col) {
-    //     painter.drawRect(tableX + col * cellWidth, tableY, cellWidth, cellHeight);
-    //     painter.drawText(tableX + col * cellWidth + 10, tableY + 25, headers[col]);
-    // }
-
-    // // Draw data
-    // for (int row = 0; row < data.size(); ++row) {
-    //     for (int col = 0; col < cols; ++col) {
-    //         int x = tableX + col * cellWidth;
-    //         int y = tableY + (row + 1) * cellHeight;
-    //         painter.drawRect(x, y, cellWidth, cellHeight);
-    //         painter.drawText(x + 10, y + 25, data[row][col]);
-    //     }
-    // }
-
-    // // Page 4 - Text content
-    // writer.newPage();
-    // painter.fillRect(pageRect, Qt::white);
-
-    // painter.setFont(titleFont);
-    // painter.setPen(Qt::black);
-    // painter.drawText(100, 200, "Page 4 - Text Content");
-
-    // painter.setFont(normalFont);
-    // QRect textRect(100, 250, pageRect.width() - 200, pageRect.height() - 300);
-    // QString longText = "This is a demonstration of longer text content in the PDF. "
-    //                    "The PDF is created entirely in memory without writing to disk. "
-    //                    "This approach is useful for:\n\n"
-    //                    "• Web applications that generate PDFs on-the-fly\n"
-    //                    "• Embedded systems with read-only filesystems\n"
-    //                    "• Cloud environments with restricted file access\n"
-    //                    "• Applications requiring temporary PDF generation\n\n"
-    //                    "The PDF content is stored in a QByteArray and displayed "
-    //                    "using a QQuickImageProvider that renders each page as an image. "
-    //                    "This provides smooth scrolling and zooming capabilities while "
-    //                    "keeping everything in memory.";
-
-    // painter.drawText(textRect, Qt::TextWordWrap | Qt::AlignLeft, longText);
+    const InvoiceIDs id = static_cast<InvoiceIDs>(m_pdfData["id"].toInt());
+    switch(id){
+    case VENDA: generateVendaPDF(painter); break;
+    case MULTIRRISCOS: generateMultirriscosPDF(painter); break;
+    default:
+        qWarning() << "Unknown invoice ID for PDF generation:" << static_cast<int>(id);
+        break;
+    }
 
     painter.end();
     buffer.close();

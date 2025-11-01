@@ -20,6 +20,12 @@ class PDFController : public QObject {
     Q_PROPERTY(QJsonObject pdfData WRITE setPdfData NOTIFY pdfDataChanged)
 
 public:
+    enum InvoiceIDs{
+        NULLID,
+        VENDA,
+        MULTIRRISCOS
+    };
+    Q_ENUM(InvoiceIDs)
     //explicit PDFController(PDFImageProvider *provider, QObject *parent = nullptr);
     explicit PDFController(QObject *parent = nullptr);
 
@@ -77,6 +83,10 @@ private:
 
     QImage generateQrCode(const QString &text);
     QString computeInvoiceQRCode(const QJsonObject &invoice);
+    void drawCustomerData(const QJsonObject &customer, QPainter &painter, const QPoint &pos);
+    void drawDateNumber(const QString &date, const QString &number, QPainter &painter, const QPoint &pos);
+    void generateVendaPDF(QPainter &painter);
+    void generateMultirriscosPDF(QPainter &painter);
 };
 
 #endif // PDFCONTROLLER_H

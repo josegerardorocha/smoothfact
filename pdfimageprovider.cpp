@@ -14,7 +14,11 @@ PDFImageProvider::PDFImageProvider()
 
 PDFImageProvider::~PDFImageProvider() = default;
 
-void PDFImageProvider::setPdfData(const QByteArray &data) {
+void PDFImageProvider::setPdfData(const QByteArray &data)
+{
+    qDebug() << "--------------------------------------------------------- ";
+    qDebug() << "PDFImageProvider::setPdfData: Loading PDF data of size:" << data.size();
+    qDebug() << "--------------------------------------------------------- ";
     m_pdfData = data;
 
     // Close any existing document
@@ -26,28 +30,6 @@ void PDFImageProvider::setPdfData(const QByteArray &data) {
 
     // Load the document from the buffer
     m_document->load(buffer);
-
-    // // The document takes ownership of the buffer and will delete it
-    // // Connect to check when loading is complete
-    // if (m_document->status() == QPdfDocument::Status::Loading) {
-    //     // Wait for loading to complete (in a real app, you might want to handle this asynchronously)
-    //     QEventLoop loop;
-    //     QObject::connect(m_document.get(), &QPdfDocument::statusChanged, &loop, [&loop, this](QPdfDocument::Status status) {
-    //         if (status != QPdfDocument::Status::Loading) {
-    //             loop.quit();
-    //         }
-    //     });
-    //     loop.exec();
-    // }
-
-    // if (m_document->status() == QPdfDocument::Status::Ready) {
-    //     qDebug() << "PDF loaded successfully, pages:" << m_document->pageCount();
-    // } else {
-    //     qWarning() << "Failed to load PDF from data, status:" << static_cast<int>(m_document->status());
-    //     if (m_document->status() == QPdfDocument::Status::Error) {
-    //         qWarning() << "Error details:" << m_document->error();
-    //     }
-    // }
 }
 
 void PDFImageProvider::clear() {
@@ -66,10 +48,14 @@ QSizeF PDFImageProvider::pageSize(int page) const {
     return m_document->pagePointSize(page);
 }
 
-QImage PDFImageProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize) {
+QImage PDFImageProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize)
+{
     // Parse the ID which might contain query parameters
     // Format: "pageNumber?zoom=1.5&t=timestamp" or just "pageNumber"
 
+    qDebug() << "--------------------------------------------------------- ";
+    qDebug() << "PDFImageProvider::requestImage: Requested ID:" << id;
+    qDebug() << "--------------------------------------------------------- ";
     QString pageStr = id;
     double zoomFactor = 1.0;
 

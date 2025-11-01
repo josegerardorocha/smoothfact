@@ -23,10 +23,8 @@ StackLayout {
     SellInvoicePage {   // Vendas
         id: sellInvoicePage
     }
-    Text{   // Seguros
-        text: "Seguros - Página em construção - " + username
-        Layout.alignment: Qt.AlignCenter
-        font.pixelSize: 24
+    SegurosPage{   // Seguros
+        id: segurosPage
     }
     InvoicePage {   // Compras
         id: invoicePage

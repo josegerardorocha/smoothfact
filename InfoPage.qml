@@ -84,7 +84,7 @@ ScrollView {
             placeholderText: "Company Name"
             Layout.fillWidth: true
             text: CompanyData.name
-            onTextChanged: if (editable) CompanyData.companyName = text
+            onTextChanged: if (editable) CompanyData.name = text
             enabled: editable
         }
         CustomTextArea {
@@ -92,7 +92,7 @@ ScrollView {
             Layout.fillWidth: true
             placeholderText: "Company Address"
             text: CompanyData.address
-            onTextChanged: if (editable) CompanyData.companyAddress = text
+            onTextChanged: if (editable) CompanyData.address = text
             enabled: editable
         }
         RowLayout {
@@ -106,7 +106,7 @@ ScrollView {
                 placeholderText: "NIF"
                 text: CompanyData.nif
                 inputMask: "999999999"   // optional
-                onTextChanged: if (editable) CompanyData.companyNif = text
+                onTextChanged: if (editable) CompanyData.nif = text
                 enabled: editable
             }
             CustomButton {
@@ -127,7 +127,7 @@ ScrollView {
                 placeholderText: "NISS"
                 text: CompanyData.niss
                 inputMask: "99999999999" // optional
-                onTextChanged: if (editable) CompanyData.companyNiss = text
+                onTextChanged: if (editable) CompanyData.niss = text
                 enabled: editable
             }
             CustomButton {
@@ -148,7 +148,7 @@ ScrollView {
                 Layout.alignment: Qt.AlignTop
                 placeholderText: "IBAN"
                 text: CompanyData.iban
-                onTextChanged: if (editable) CompanyData.companyIban = text
+                onTextChanged: if (editable) CompanyData.iban = text
                 enabled: editable
             }
             CustomIbanCombo {
@@ -174,7 +174,7 @@ ScrollView {
             placeholderText: "Classificação CAE"
             Layout.fillWidth: true
             text: CompanyData.cae
-            onTextChanged: if (editable) CompanyData.companyCae = text
+            onTextChanged: if (editable) CompanyData.cae = text
             enabled: editable
         }
 
@@ -185,7 +185,7 @@ ScrollView {
             CustomButton {
                 text: "Reset"
                 enabled: editable
-                onClicked: loadData()
+                onClicked: CompanyData.loadData()
             }
             CustomButton {
                 text: "Submit"

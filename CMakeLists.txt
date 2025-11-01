@@ -26,6 +26,7 @@ qt_add_qml_module(appsmoothfact
         customcontrols/CustomSwitch.qml
         customcontrols/CustomIbanCombo.qml
         customcontrols/CustomBinCheckbox.qml
+        customcontrols/CustomDateField.qml
         customcontrols/fuse.min.js
         customcontrols/cae.js
         customcontrols/iban_prefix.js
@@ -55,11 +56,15 @@ qt_add_qml_module(appsmoothfact
         menu/LogoutIcon.qml
         sellinvoice/SellInvoicePage.qml
         sellinvoice/SellInvoiceForm.qml
+        seguros/SegurosPage.qml
     SOURCES
         pdfcontroller.h       pdfcontroller.cpp
         pdfimageProvider.h    pdfimageprovider.cpp
         qrcode.h              qrcode.cpp
-        QML_FILES customcontrols/CustomDateField.qml
+        QML_FILES customcontrols/CustomCombo.qml
+        QML_FILES seguros/SeguroMultirrisco.qml
+    RESOURCES
+        README.txt
 )
 
 

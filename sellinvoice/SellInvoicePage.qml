@@ -21,16 +21,7 @@ Rectangle {
             "VAT":     vat
         }
     }
-    // function formatDate(today){
-    //     let day = String(today.getDate()).padStart(2, '0')
-    //     let month = String(today.getMonth() + 1).padStart(2, '0') // Months are zero-based
-    //     let year = today.getFullYear()
-    //     return {
-    //         "day": day,
-    //         "month": month,
-    //         "year": year
-    //     }
-    // }
+
     function year(dateText) {
         // Match DD/MM/YYYY
         const match = /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/(\d{4})$/.exec(dateText)
@@ -110,50 +101,29 @@ Rectangle {
             }
         }
     }
-
-    // RemotePdfRenderer {
-    //     id: pdfRenderer
-    //     onPageCountChanged: {
-    //         console.log("++++++++++ Page count changed:", pageCount)
-    //         viewer.visible = pageCount > 0
-    //     }
-    //     onDownloadProgress: (bytesReceived, bytesTotal) => {
-    //                             console.log("++++++++++++++ Download progress:", bytesReceived, "bytes of", bytesTotal)
-    //                         }
-    //     onCurrentPageChanged: {
-    //         console.log("++++++++++++++ Current page changed:", currentPage)
-    //     }
-    // }
-
-    //SplitView {
-    //    id: mainSplitView
-    //    anchors.fill: parent
-    //    orientation: Qt.Horizontal
-    //    handle: Rectangle {
-    //        implicitWidth: 2
-    //        implicitHeight: 2
-    //    }
-    RowLayout {
+    StackLayout{
         anchors.fill: parent
-        anchors.margins: 20
-        spacing: 20
-        SellInvoiceForm{
-            id: sellInvoiceForm
+        //anchors.margins: 20
+        id: stackLayout
+        // Layout.fillWidth: true
+        // Layout.fillHeight: true
+        RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            onAddHeader: (data) => {
-                // console.log("InvoicePage.qml: Received addHeader signal from InvoiceForm")
-                updateShowDataHeader(data)
-                         }
-            onAddRow: (data) => {
-                          updateAddRow(data)
-                          updateTotals()
-                      }
-        }
-        StackLayout{
-            id: stackLayout
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+            spacing: 20
+            SellInvoiceForm{
+                id: sellInvoiceForm
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                onAddHeader: (data) => {
+                                 // console.log("InvoicePage.qml: Received addHeader signal from InvoiceForm")
+                                 updateShowDataHeader(data)
+                             }
+                onAddRow: (data) => {
+                              updateAddRow(data)
+                              updateTotals()
+                          }
+            }
             InvoiceShowData{
                 id: showData
                 Layout.fillWidth: true
@@ -165,120 +135,29 @@ Rectangle {
                         rows.push(showData.model.get(i))
                     }
                     viewer.pdfData = {
+                        "id": PDFController.VENDA,
                         "header": showData.header,
                         "totais": showData.totals,
                         "rows": rows
                     }
-
-                    // console.log("---------------------------------------------------------------------------")
-                    // console.log("InvoicePage.qml: Generated pdfData:", JSON.stringify( viewer.pdfData))
-                    // let postData = {
-                    //     "username": username,
-                    //     "header": showData.header,
-                    //     "rows": []
-                    // }
-                    // for(let i=0; i< showData.model.count; i++){
-                    //     postData.rows.push(showData.model.get(i))
-                    // }
-                    // console.log("Generating PDF with data:", JSON.stringify(postData))
-                    // pdfRenderer.urlToLoad = "http://localhost/faturas/backend/invoice.php?user=" + username
-                    // imgPdfProvider.renderer = pdfRenderer
-                    // viewer.visible = true
-                    // showData.visible = false
                     stackLayout.currentIndex = 1
-                    // updatePdfData()
+                    viewer.updatePdf()
                 }
                 onClearInvoiceData: {
                     sellInvoiceForm.headerVisible = true
                 }
             }
-            InvoiceShowPDF {
-                id: viewer
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                //renderer: pdfRenderer
-                //visible: false
-                refresh: stackLayout.currentIndex === 1
-                onCloseInvoiceShowPDF: {
-                    // viewer.visible = false
-                    // showData.visible = true
-                    stackLayout.currentIndex = 0
-                }
-                // pdfData: {
-                //     "header": {
-                //         "tipoOperacao": "buy",
-                //         "QType": "P/tl",
-                //         "country": "PT",
-                //         "buyer": {
-                //             "company": "Sample Company Lda",
-                //             "address": "123 Sample Street, Lisbon",
-                //             "country": "Portugal",
-                //             "VAT":     "123456789",
-                //             "countryCode":"PT"
-                //         },
-                //         "seller": {
-                //             "company": "Another Company SA",
-                //             "address": "456 Another Ave, Porto",
-                //             "country": "Portugal",
-                //             "VAT":     "987654321",
-                //             "countryCode":"PT"
-                //         },
-                //         "date": "25/02/2024",
-                //         "number": "FT 2024/001",
-                //         "date":"25/02/2024",
-                //         "number":"FT 2024/001",
-                //         "hash":"ABCD1234EFGH5678IJKL9012MNOP3456",
-                //         "iban":"PT50000201231234567890154",
-                //         "atcud":"JJRD3W6T-3",
-                //     },
-                //     "totais":{
-                //         "totalSemIva":300,
-                //         "totalDeIva":75,
-                //         "baseIvaIsento":0,
-                //         "baseIvaRed":100,
-                //         "baseIvaInt":100,
-                //         "baseIvaNorm":200,
-                //         "descontoTotal":15,
-                //         "ivaRed":6,
-                //         "ivaInt": 23,
-                //         "ivaNorm":46,
-                //         "totalGeral":337
-                //     },
-                //     "rows": [
-                //                 {
-                //                     "tipo": "P",
-                //                     "designacao": "Product A",
-                //                     "quantidade": 2,
-                //                     "preco": 50.0,
-                //                     "desconto": 0.0,
-                //                     "iva": 23.0,
-                //                     "total": 123.0,
-                //                     "motivoIsencao": ""
-                //                 },
-                //                 {
-                //                     "tipo": "P",
-                //                     "designacao": "Product B",
-                //                     "quantidade": 1,
-                //                     "preco": 100.0,
-                //                     "desconto": 10.0,
-                //                     "iva": 23.0,
-                //                     "total": 110.7,
-                //                     "motivoIsencao": ""
-                //                 },
-                //                 {
-                //                     "tipo": "S",
-                //                     "designacao": "Service C",
-                //                     "quantidade": 5,
-                //                     "preco": 20.0,
-                //                     "desconto": 5.0,
-                //                     "iva": 0,
-                //                     "total": 95.0,
-                //                     "motivoIsencao": "Artº 23º"
-                //                 }
-                //             ]
-                // }
+        }
+        InvoiceShowPDF {
+            id: viewer
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            // refresh: stackLayout.currentIndex === 1
+            onCloseInvoiceShowPDF: {
+                stackLayout.currentIndex = 0
             }
         }
     }
 }
+
 

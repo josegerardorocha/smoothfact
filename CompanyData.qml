@@ -42,7 +42,7 @@ QtObject {
         // console.log("submitData params=", params)
         HttpRequest.post("backend/info.php", params, function(success, response) {
             if (success) {
-                // console.log("Update successful:", response)
+                console.log("Update successful:", JSON.stringify(response))
             } else {
                 console.log("Update failed")
             }

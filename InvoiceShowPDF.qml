@@ -6,15 +6,15 @@ import Smoothfact
 
 Rectangle{
     property alias pdfData: pdfController.pdfData
-    property bool refresh: false
+    // property bool refresh: false
     // anchors.fill: parent
     // JavaScript function to trigger download
     signal closeInvoiceShowPDF()
-    onRefreshChanged: {
+    function updatePdf() {
         // Reset status label when component becomes visible
-        if (refresh) {
+        //if (refresh) {
             pdfController.generateSamplePDF()
-        }
+        //}
     }
     function downloadBlob(base64Data, filename) {
         // This JavaScript code will run in the browser
@@ -88,12 +88,6 @@ Rectangle{
             anchors.fill: parent
             anchors.margins: 2
 
-            // Button {
-            //     text: "Generate PDF"
-            //     icon.name: "document-new"
-            //     onClicked: pdfController.generateSamplePDF()
-            //     Layout.preferredWidth: 120
-            // }
             Button {
                 text: "Download"
                 //icon.name: "document-save"
