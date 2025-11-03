@@ -176,14 +176,15 @@ void PDFController::drawCustomerData(const QJsonObject &customer, QPainter &pain
                     "    </div>"
                     "  </td></tr>"
                     "</table>";
-    QTextDocument doc;
-    doc.setHtml(text);
-    doc.setTextWidth(rect.width());  // so it wraps properly
+    paintHtml(rect, text, painter);
+    // QTextDocument doc;
+    // doc.setHtml(text);
+    // doc.setTextWidth(rect.width());  // so it wraps properly
 
-    painter.save();
-    painter.translate(rect.topLeft());  // move to target rect
-    doc.drawContents(&painter);
-    painter.restore();
+    // painter.save();
+    // painter.translate(rect.topLeft());  // move to target rect
+    // doc.drawContents(&painter);
+    // painter.restore();
 }
 
 void PDFController::drawDateNumber(const QString &date, const QString &number,
@@ -192,7 +193,7 @@ void PDFController::drawDateNumber(const QString &date, const QString &number,
     QRect pageRect = painter.viewport();
     QRect rect(pos.x(), pos.y(), pageRect.width()*1/3-100, 180);
     QString text = QString() +
-                    "<table border='0' cellspacing='0' cellpadding='6' width='100%'>"
+                    "<table border='0' cellspacing='0' cellpadding='6' width='100%' style='background-color: rgb(200, 200, 200);'>"
                     "  <tr><td>"
                     "    <div style='text-align: left;'>"
                     "      <span style='font-size:18pt; font-weight:bold;'>" + number + "</span>"
@@ -200,13 +201,41 @@ void PDFController::drawDateNumber(const QString &date, const QString &number,
                     "    </div>"
                     "  </td></tr>"
                     "</table>";
+    paintHtml(rect, text, painter);
+    // QTextDocument doc;
+    // doc.setHtml(text);
+    // doc.setTextWidth(rect.width());  // so it wraps properly
+    // painter.save();
+    // painter.translate(rect.topLeft());  // move to target rect
+    // doc.drawContents(&painter);
+    // painter.restore();
+}
+
+QString PDFController::qrCodeHtml(const QString &qrData, QSize &qrSize)
+{
+    QImage qr = generateQrCode(qrData);
+    qrSize = qr.size();
+    QByteArray byteArray;
+    QBuffer buffer(&byteArray);
+    buffer.open(QIODevice::WriteOnly);
+    qr.save(&buffer, "PNG");
+    QString base64 = QString::fromLatin1(byteArray.toBase64().data());
+    return QString("data:image/png;base64,") + base64;
+}
+
+QSizeF PDFController::paintHtml(const QRect &rect, const QString &html, QPainter &painter)
+{
     QTextDocument doc;
-    doc.setHtml(text);
-    doc.setTextWidth(rect.width());  // so it wraps properly
+    //int yposition = rect.y();
+    //QRect tableRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
+    doc.setHtml(html);
+    doc.setTextWidth(rect.width());
     painter.save();
-    painter.translate(rect.topLeft());  // move to target rect
+    painter.translate(rect.topLeft());
     doc.drawContents(&painter);
+    //qDebug() << "doc.size():" << doc.size();
     painter.restore();
+    return doc.size();
 }
 
 void PDFController::generateVendaPDF(QPainter &painter)
@@ -240,17 +269,18 @@ void PDFController::generateVendaPDF(QPainter &painter)
         "  </tr>"
         "</table>"
         ;
-    QTextDocument doc;
+    //QTextDocument doc;
     int yposition = 510;
     QRect tableRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
-    doc.setHtml(text);
-    doc.setTextWidth(tableRect.width());
-    painter.save();
-    painter.translate(tableRect.topLeft());
-    doc.drawContents(&painter);
-    qDebug() << "doc.size():" << doc.size();
-    painter.restore();
-    yposition += int(doc.size().height());
+    QSizeF size = paintHtml(tableRect, text, painter);
+    //doc.setHtml(text);
+    //doc.setTextWidth(tableRect.width());
+    //painter.save();
+    //painter.translate(tableRect.topLeft());
+    //doc.drawContents(&painter);
+    //qDebug() << "doc.size():" << doc.size();
+    //painter.restore();
+    yposition += int(size.height());
     painter.drawLine(100, yposition, pageRect.width() - 100, yposition);
 
     // rows
@@ -281,14 +311,15 @@ void PDFController::generateVendaPDF(QPainter &painter)
     text += "</table>";
 
     tableRect = QRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
-    qDebug() << "Table rect:" << tableRect;
-    doc.setHtml(text);
-    doc.setTextWidth(tableRect.width());
-    painter.save();
-    painter.translate(tableRect.topLeft());
-    doc.drawContents(&painter);
-    yposition += int(doc.size().height());
-    painter.restore();
+    size = paintHtml(tableRect, text, painter);
+    //qDebug() << "Table rect:" << tableRect;
+    //doc.setHtml(text);
+    //doc.setTextWidth(tableRect.width());
+    //painter.save();
+    //painter.translate(tableRect.topLeft());
+    //doc.drawContents(&painter);
+    yposition += int(size.height());
+    //painter.restore();
     painter.drawLine(100, yposition, pageRect.width() - 100, yposition);
 
     // motivo isenção
@@ -297,7 +328,7 @@ void PDFController::generateVendaPDF(QPainter &painter)
         "<table border='0' cellspacing='0' cellpadding='0' width='100%'>"
         "<tr>"
            "<td width='80%' valign='top'>"
-           "<table border='1' cellspacing='0' cellpadding='4' width='100%'>";
+           "<table border='0' cellspacing='0' cellpadding='4' width='100%'>";
 
     for(const QJsonValue &value : std::as_const(rowsArray)){
         QJsonObject row = value.toObject();
@@ -334,23 +365,26 @@ void PDFController::generateVendaPDF(QPainter &painter)
     text += "</td></tr></table>";
 
     tableRect = QRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
-    doc.setHtml(text);
-    doc.setTextWidth(tableRect.width());
-    painter.save();
-    painter.translate(tableRect.topLeft());
-    doc.drawContents(&painter);
-    painter.restore();
+    size = paintHtml(tableRect, text, painter);
+    //doc.setHtml(text);
+    //doc.setTextWidth(tableRect.width());
+    //painter.save();
+    //painter.translate(tableRect.topLeft());
+    //doc.drawContents(&painter);
+    //painter.restore();
 
 
 
     // QR code
     QString qrs = computeInvoiceQRCode(m_pdfData);
-    QImage qr = generateQrCode(qrs);
-    QByteArray byteArray;
-    QBuffer buffer(&byteArray);
-    buffer.open(QIODevice::WriteOnly);
-    qr.save(&buffer, "PNG");
-    QString base64 = QString::fromLatin1(byteArray.toBase64().data());
+    QSize qrSize;
+    QString qrStr = qrCodeHtml(qrs, qrSize);
+    // QImage qr = generateQrCode(qrs);
+    // QByteArray byteArray;
+    // QBuffer buffer(&byteArray);
+    // buffer.open(QIODevice::WriteOnly);
+    // qr.save(&buffer, "PNG");
+    // QString base64 = QString::fromLatin1(byteArray.toBase64().data());
 
     // resumo do iva e desenho do qr code
     double taxasIva[]{
@@ -389,7 +423,7 @@ void PDFController::generateVendaPDF(QPainter &painter)
                 "</tr>";
         }
     }
-    QString qrStr = QString("data:image/png;base64,") + base64;
+    // QString qrStr = QString("data:image/png;base64,") + base64;
     text +=
         "        </table>"
         "    </td>"
@@ -400,26 +434,21 @@ void PDFController::generateVendaPDF(QPainter &painter)
         "0r9y - Processado por programa não certificado - SmoothFact<br>"
         "Serve apenas para fins pedagógicos.";
 
-    yposition = pageRect.height() - 200 - qr.height();
+    yposition = pageRect.height() - 200 - qrSize.height();
     tableRect = QRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
-    doc.setHtml(text);
-    doc.setTextWidth(tableRect.width());
-    painter.save();
-    painter.translate(tableRect.topLeft());
-    doc.drawContents(&painter);
-    painter.restore();
+    size = paintHtml(tableRect, text, painter);
+    // doc.setHtml(text);
+    // doc.setTextWidth(tableRect.width());
+    // painter.save();
+    // painter.translate(tableRect.topLeft());
+    // doc.drawContents(&painter);
+    // painter.restore();
 }
 
-void PDFController::generateMultirriscosPDF(QPainter &painter)
+void PDFController::generateSegurosPDF(QPainter &painter)
 {
-    // pageRect QRect(0,0 1197x1712);
-/*
-    m_pdfData["dataInicio"]
-    m_pdfData["premio"]
-    m_pdfData["impostoSelo"]
-    m_pdfData["total"]
- */
     const QJsonObject header = m_pdfData["header"].toObject();
+    const QJsonObject buyer = header["buyer"].toObject();
     auto isZero = [](double x) {
         constexpr double tol = 1e-6;
         return std::fabs(x) < tol;
@@ -431,9 +460,177 @@ void PDFController::generateMultirriscosPDF(QPainter &painter)
     painter.fillRect(pageRect, Qt::white);
 
     drawCustomerData(header["seller"].toObject(), painter, QPoint(100, 160));
-    drawDateNumber(header["date"].toString(), header["number"].toString(),
-                   painter, QPoint(pageRect.width()*2/3, 160));
-    drawCustomerData(header["buyer"].toObject(), painter, QPoint(pageRect.width()/2, 330));
+    // drawDateNumber(header["date"].toString(), header["number"].toString(),
+    //                painter, QPoint(pageRect.width()*2/3, 160));
+    // drawCustomerData(header["buyer"].toObject(), painter, QPoint(pageRect.width()/2, 330));
+
+    double is = header["impostoSelo"].toDouble();
+    double inem = header["inem"].toDouble();
+    double fat = header["fat"].toDouble();
+    double fga = header["fga"].toDouble();
+    double cartaVerde = header["cartaVerde"].toDouble();
+    double encargosLegais = header["encargosLegais"].toDouble();
+    double encargos = header["encargos"].toDouble();
+    QString text =
+        "<table border='1' cellspacing='0' cellpadding='6' width='100%'"
+        "  style='border-collapse:collapse; text-align:left;'>"
+        "<tr style='background-color: rgb(200, 200, 200);'>"
+        "  <td style='text-align: center' colspan='8'><b>RECIBO DE PRÉMIO DE SEGURO</b></td>"
+        "</tr>"
+        ;
+    if(header["ramo"] == "Automóvel"){
+        text +=
+        "<tr>"
+        "    <td style='text-align: right' colspan='2'>Matrícula da Viatura</td>"
+        "    <td colspan='2'>"+header["matricula"].toString()+"</td>"
+        "    <td style='text-align: right' colspan='2'>Marca da Viatura</td>"
+        "    <td colspan='2'>"+header["marca"].toString()+"</td>"
+        "</tr>";
+    }
+    else{
+        text +=
+            "<tr><td colspan='8'></td></tr>";
+    }
+
+    text +=
+        "<tr style='background-color: rgb(200, 200, 200);'>"
+        "  <td colspan='2'>APÓLICE Nº</td>"
+        "  <td colspan='2'>RECIBO</td>"
+        "  <td colspan='2'>INICIO</td>"
+        "  <td colspan='2'>FIM</td>"
+        "</tr>"
+        "<tr>"
+        "  <td colspan='2'>"+header["apolice"].toString()+"</td>"
+        "  <td colspan='2'>"+header["number"].toString()+"</td>"
+        "  <td colspan='2'>"+header["date"].toString()+"</td>"
+        "  <td colspan='2'>"+header["endDate"].toString()+"</td>"
+        "</tr>"
+        "  <tr style='background-color: rgb(200, 200, 200);'>"
+        "  <th colspan='2'>RAMO</th>"
+        "  <th colspan='1'>PRÉMIO</th>"
+        "  <th colspan='2'>ENCARGOS LEGAIS</th>"
+        "  <th colspan='2'>ENCARGOS</th>"
+        "  <th colspan='1'>PRÉMIO TOTAL</th>"
+        "</tr>"
+        "<tr>"
+        "  <td colspan='2'>"+header["ramo"].toString()+"</td>"
+        "  <td colspan='1' style='text-align:right;'>"+QString::number(header["premio"].toDouble(), 'f', 2)+"€</td>"
+        "  <td colspan='2' style='text-align:right;'>"+QString::number(encargosLegais, 'f', 2)+"€</td>"
+        "  <td colspan='2' style='text-align:right;'>"+(encargos > 0.0 ? QString::number(encargos, 'f', 2) + "€" : "") + "</td>"
+        "  <td colspan='1' style='text-align:right;'>"+QString::number(header["total"].toDouble(), 'f', 2)+"€</td>"
+        "</tr>"
+        "<tr style='background-color: rgb(200, 200, 200);'>"
+        "  <th colspan='8'>DETALHE DE ENCARGOS</th>"
+        "</tr>"
+        "<tr>"
+        "  <td colspan='4'>SELO (IMPOSTO DO SELO)</td>"
+        "  <td colspan='2' style='text-align:right;'>"+ (is > 0.0 ? "0.50%": "") + "</td>"
+        "  <td colspan='2 'style='text-align:right;'>"+QString::number(is, 'f', 2)+"€</td>"
+        "</tr>"
+        "<tr>"
+        "  <td colspan='4'>INEM</td>"
+        "  <td colspan='2'  style='text-align:right;'>" + (inem > 0.0 ? "0.25%": "") + "</td>"
+        "  <td colspan='2' style='text-align:right;'>"+QString::number(inem, 'f', 2)+"€</td>"
+        "</tr>"
+        "<tr>"
+        "  <td colspan='4'>SERV.NAC.BOMBEIROS</td>"
+        "  <td colspan='2' style='text-align:right;'></td>"
+        "  <td colspan='2' style='text-align:right;'>0.00</td>"
+        "</tr>"
+        "<tr>"
+        "  <td colspan='4'>FAT (Fundo de Acidentes de Trabalho)</td>"
+        "  <td colspan='2' style='text-align:right;'>" + (fat > 0.0 ? "0.15%": "") + "</td>"
+        "  <td colspan='2' style='text-align:right;'>"+QString::number(fat, 'f', 2)+"€</td>"
+        "</tr>"
+        "<tr>"
+        "  <td colspan='4'>AGRAVAMENTO</td>"
+        "  <td colspan='2' style='text-align:right;'></td>"
+        "  <td colspan='2' style='text-align:right;'>0.00</td>"
+        "</tr>"
+        "<tr>"
+        "  <td colspan='4'>CARTA VERDE</td>"
+        "  <td colspan='2' style='text-align:right;'></td>"
+        "  <td colspan='2' style='text-align:right;'>"+QString::number(cartaVerde, 'f', 2)+"€</td>"
+        "</tr>"
+        "<tr>"
+        "  <td colspan='4'>TAXA DE GESTÃO</td>"
+        "  <td colspan='2' style='text-align:right;'></td>"
+        "  <td colspan='2' style='text-align:right;'>0.00</td>"
+        "</tr>"
+        "<tr>"
+        "  <td colspan='4'>FUNDO DE GARANTIA AUTO</td>"
+        "  <td colspan='2' style='text-align:right;'></td>"
+        "  <td colspan='2' style='text-align:right;'>"+QString::number(fga, 'f', 2)+"€</td>"
+        "</tr>"
+        "<tr style='background-color: rgb(200, 200, 200);'>"
+        "  <th colspan='8'>IDENTIFICAÇÃO DO CLIENTE</th>"
+        "</tr>"
+        "<tr>"
+        "  <td colspan='2'>Nome:</td>"
+        "  <td colspan='6'>"+buyer["company"].toString()+"</td>"
+        "</tr>"
+        "<tr>"
+        "  <td colspan='2'>Morada:</td>"
+        "  <td colspan='6'>"+buyer["address"].toString()+"</td>"
+        "</tr>"
+        "<tr>"
+        "  <td colspan='2'>NIF/NIPC:</td>"
+        "  <td colspan='6'>"+buyer["VAT"].toString()+"</td>"
+        "</tr>"
+        "<tr style='background-color: rgb(200, 200, 200);'>"
+        "  <th colspan='8'>OUTRAS INFORMAÇÕES</th>"
+        "</tr>"
+        "<tr>"
+        "  <td colspan='2'>Emitido:</td>"
+        "  <td colspan='2'>"+header["date"].toString()+"</td>"
+        "  <td colspan='2'>Tipo Recibo:</td>"
+        "  <td colspan='2'>Anual</td>"
+        "</tr>"
+        "</table>";
+
+    int yposition = 500;
+    QRect tableRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
+    paintHtml(tableRect, text, painter);
+    // QTextDocument doc;
+    // doc.setHtml(text);
+    // doc.setTextWidth(tableRect.width());
+    // painter.save();
+    // painter.translate(tableRect.topLeft());
+    // doc.drawContents(&painter);
+    // painter.restore();
+
+
+    // QR code
+    QString qrs = computeInvoiceQRCode(m_pdfData);
+    QSize qrSize;
+    QString qrStr = qrCodeHtml(qrs, qrSize);
+    // QImage qr = generateQrCode(qrs);
+    // QByteArray byteArray;
+    // QBuffer buffer(&byteArray);
+    // buffer.open(QIODevice::WriteOnly);
+    // qr.save(&buffer, "PNG");
+    // QString base64 = QString::fromLatin1(byteArray.toBase64().data());
+    // QString qrStr = QString("data:image/png;base64,") + base64;
+    text =
+        "<table border='0' cellspacing='0' cellpadding='0' width='100%'>"
+        "<tr>"
+        "    <td width='60%' valign='bottom'>"
+        "        0r9y - Processado por programa não certificado - SmoothFact<br>"
+        "        Serve apenas para fins pedagógicos."
+        "    </td>"
+        "    <td width='40%' align='right' valign='top'>ATCUD: " + header["atcud"].toString() + "<br>"
+        "        <img src=\"" + qrStr + "\" alt='QR Code'></td>"
+        "</tr>"
+        "</table>";
+    yposition = pageRect.height() - 200 - qrSize.height();
+    tableRect = QRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
+    paintHtml(tableRect, text, painter);
+    // doc.setHtml(text);
+    // doc.setTextWidth(tableRect.width());
+    // painter.save();
+    // painter.translate(tableRect.topLeft());
+    // doc.drawContents(&painter);
+    // painter.restore();
 }
 
 void PDFController::generateSamplePDF()
@@ -456,7 +653,7 @@ void PDFController::generateSamplePDF()
     const InvoiceIDs id = static_cast<InvoiceIDs>(m_pdfData["id"].toInt());
     switch(id){
     case VENDA: generateVendaPDF(painter); break;
-    case MULTIRRISCOS: generateMultirriscosPDF(painter); break;
+    case MULTIRRISCOS: generateSegurosPDF(painter); break;
     default:
         qWarning() << "Unknown invoice ID for PDF generation:" << static_cast<int>(id);
         break;
@@ -481,6 +678,7 @@ void PDFController::loadPdfData(const QByteArray &data) {
     emit pdfUpdated();
 
     qDebug() << "PDF loaded with" << m_pageCount << "pages";
+    qDebug() << "m_currentPdfData.size() =" << m_currentPdfData.size();
 
     QString filename = "output.pdf";
 
@@ -490,7 +688,7 @@ void PDFController::loadPdfData(const QByteArray &data) {
         return;
     }
 
-    qint64 bytesWritten = file.write(data);
+    qint64 bytesWritten = file.write(m_currentPdfData);
     if (bytesWritten == -1) {
         qWarning() << "Failed to write data to file";
     } else {
@@ -528,25 +726,49 @@ void PDFController::resetZoom() {
     setZoom(1.0);
 }
 
-void PDFController::downloadPdf(const QString &filename) {
-    if (m_currentPdfData.isEmpty()) {
-        qWarning() << "No PDF data to download";
+// void PDFController::downloadPdf(const QString &filename)
+// {
+//     if (m_currentPdfData.isEmpty()) {
+//         qWarning() << "No PDF data to download";
+//         return;
+//     }
+//
+//     QString finalFilename = filename;
+//     if (finalFilename.isEmpty()) {
+//         QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
+//         finalFilename = QString("document_%1.pdf").arg(timestamp);
+//     }
+//
+//     // Convert to Base64 for JavaScript
+//     QString base64Data = m_currentPdfData.toBase64();
+//
+//     // Emit signal that will be handled by QML/JavaScript
+//     emit downloadReady(base64Data, finalFilename);
+//
+//     qDebug() << "PDF ready for download:" << finalFilename << "Size:" << m_currentPdfData.size();
+// }
+
+void PDFController::saveFile(const QString &filename)
+{
+    if (filename.isEmpty()) {
+        qWarning() << "No file name specified.";
         return;
     }
 
-    QString finalFilename = filename;
-    if (finalFilename.isEmpty()) {
-        QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
-        finalFilename = QString("document_%1.pdf").arg(timestamp);
+    // Convert QML's "file://" URL to a local file path
+    const QString localPath = QUrl(filename).toLocalFile();
+
+    QFile file(localPath);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qWarning() << "Could not open file for writing:" << localPath;
+        return;
     }
 
-    // Convert to Base64 for JavaScript
-    QString base64Data = m_currentPdfData.toBase64();
-
-    // Emit signal that will be handled by QML/JavaScript
-    emit downloadReady(base64Data, finalFilename);
-
-    qDebug() << "PDF ready for download:" << finalFilename << "Size:" << m_currentPdfData.size();
+    qDebug() << "PDFController::saveFile. m_currentPdfData.size() =" << m_currentPdfData.size();
+    qint64 bytesWritten = file.write(m_currentPdfData);
+    file.close();
+    if (bytesWritten < 0)
+        qWarning() << "Error writing to file:" << localPath;
 }
 
 QString PDFController::getPdfAsBase64() const {

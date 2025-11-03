@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-// import QtQuick.Pdf
+import Qt.labs.platform
 import Smoothfact
 
 Rectangle{
@@ -16,62 +16,78 @@ Rectangle{
             pdfController.generateSamplePDF()
         //}
     }
-    function downloadBlob(base64Data, filename) {
-        // This JavaScript code will run in the browser
-        var jsCode = "
-            (function() {
-                // Convert base64 to blob
-                var byteCharacters = atob('" + base64Data + "');
-                var byteNumbers = new Array(byteCharacters.length);
-                for (var i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                var byteArray = new Uint8Array(byteNumbers);
-                var blob = new Blob([byteArray], {type: 'application/pdf'});
-
-                // Create download link
-                var link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = '" + filename + "';
-
-                // Trigger download
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                // Clean up
-                setTimeout(function() {
-                    window.URL.revokeObjectURL(link.href);
-                }, 100);
-            })();
-        ";
-
-        // Execute JavaScript in browser context
-        if (typeof Qt !== 'undefined' && Qt.platform.os === "wasm") {
-            eval(jsCode);
+    FileDialog {
+        id: saveDialog
+        title: "Save As"
+        fileMode: FileDialog.SaveFile
+        nameFilters: ["Text files (*.pdf)", "All files (*)"]
+        defaultSuffix: "pdf"
+        folder: StandardPaths.writableLocation(StandardPaths.DownloadLocation)
+        onAccepted: {
+            // console.log("User selected file:", file)
+            // // Example: use file.toString() or file.toLocalFile()
+            // saveFile(file)
+            pdfController.saveFile(file)
         }
+
+        //onRejected: console.log("Save canceled")
     }
+    // function downloadBlob(base64Data, filename) {
+    //     // This JavaScript code will run in the browser
+    //     var jsCode = "
+    //         (function() {
+    //             // Convert base64 to blob
+    //             var byteCharacters = atob('" + base64Data + "');
+    //             var byteNumbers = new Array(byteCharacters.length);
+    //             for (var i = 0; i < byteCharacters.length; i++) {
+    //                 byteNumbers[i] = byteCharacters.charCodeAt(i);
+    //             }
+    //             var byteArray = new Uint8Array(byteNumbers);
+    //             var blob = new Blob([byteArray], {type: 'application/pdf'});
 
-    // Alternative method using Qt's WebAssembly API
-    function downloadPdfWeb() {
-        if (!pdfController.hasPdf) return;
+    //             // Create download link
+    //             var link = document.createElement('a');
+    //             link.href = window.URL.createObjectURL(blob);
+    //             link.download = '" + filename + "';
 
-        var base64 = pdfController.getPdfAsBase64();
-        var filename = "document_" + Date.now() + ".pdf";
+    //             // Trigger download
+    //             document.body.appendChild(link);
+    //             link.click();
+    //             document.body.removeChild(link);
 
-        // Create a data URL and trigger download
-        var dataUrl = "data:application/pdf;base64," + base64;
+    //             // Clean up
+    //             setTimeout(function() {
+    //                 window.URL.revokeObjectURL(link.href);
+    //             }, 100);
+    //         })();
+    //     ";
 
-        // Create invisible link and click it
-        var link = Qt.createQmlObject('
-            import QtQuick
-            Item {
-                Component.onCompleted: {
-                    Qt.openUrlExternally("' + dataUrl + '");
-                }
-            }
-        ', window, "dynamicLink");
-    }
+    //     // Execute JavaScript in browser context
+    //     if (typeof Qt !== 'undefined' && Qt.platform.os === "wasm") {
+    //         eval(jsCode);
+    //     }
+    // }
+
+    // // Alternative method using Qt's WebAssembly API
+    // function downloadPdfWeb() {
+    //     if (!pdfController.hasPdf) return;
+
+    //     var base64 = pdfController.getPdfAsBase64();
+    //     var filename = "document_" + Date.now() + ".pdf";
+
+    //     // Create a data URL and trigger download
+    //     var dataUrl = "data:application/pdf;base64," + base64;
+
+    //     // Create invisible link and click it
+    //     var link = Qt.createQmlObject('
+    //         import QtQuick
+    //         Item {
+    //             Component.onCompleted: {
+    //                 Qt.openUrlExternally("' + dataUrl + '");
+    //             }
+    //         }
+    //     ', window, "dynamicLink");
+    // }
 
     ToolBar {
         id: toolbar
@@ -92,7 +108,7 @@ Rectangle{
                 text: "Download"
                 //icon.name: "document-save"
                 enabled: pdfController.hasPdf
-                onClicked: pdfController.downloadPdf()
+                onClicked: saveDialog.open() // pdfController.downloadPdf()
                 // Layout.preferredWidth: 80
 
                 ToolTip.visible: hovered
@@ -250,15 +266,15 @@ Rectangle{
         }
     }
     // Handle download signal
-    Connections {
-        target: pdfController
+    // Connections {
+    //     target: pdfController
 
-        function onDownloadReady(base64Data, filename) {
-            downloadBlob(base64Data, filename);
-            statusLabel.text = "Download started: " + filename;
-            statusLabel.color = "green";
-        }
-    }
+    //     function onDownloadReady(base64Data, filename) {
+    //         downloadBlob(base64Data, filename);
+    //         statusLabel.text = "Download started: " + filename;
+    //         statusLabel.color = "green";
+    //     }
+    // }
 
     // // Keyboard shortcuts
     // Shortcut {

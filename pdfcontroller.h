@@ -59,7 +59,8 @@ public:
     Q_INVOKABLE void resetZoom();
 
     // Save functions for WebAssembly
-    Q_INVOKABLE void downloadPdf(const QString &filename = QString());
+    //Q_INVOKABLE void downloadPdf(const QString &filename = QString());
+    Q_INVOKABLE void saveFile(const QString &filename = QString());
     Q_INVOKABLE QString getPdfAsBase64() const;
     Q_INVOKABLE QByteArray getPdfData() const { return m_currentPdfData; }
 
@@ -71,7 +72,7 @@ signals:
     void pdfUpdated();
     void providerChanged();
     void pdfDataChanged();
-    void downloadReady(const QString &base64Data, const QString &filename);
+    //void downloadReady(const QString &base64Data, const QString &filename);
 
 private:
     PDFImageProvider *m_provider;
@@ -86,7 +87,9 @@ private:
     void drawCustomerData(const QJsonObject &customer, QPainter &painter, const QPoint &pos);
     void drawDateNumber(const QString &date, const QString &number, QPainter &painter, const QPoint &pos);
     void generateVendaPDF(QPainter &painter);
-    void generateMultirriscosPDF(QPainter &painter);
+    void generateSegurosPDF(QPainter &painter);
+    QString qrCodeHtml(const QString &qrData, QSize &qrSize);
+    QSizeF paintHtml(const QRect &rect, const QString &html, QPainter &painter);
 };
 
 #endif // PDFCONTROLLER_H

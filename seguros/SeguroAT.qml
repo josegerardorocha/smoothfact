@@ -27,12 +27,16 @@ Rectangle{
       return `${newDay}/${newMonth}/${newYear}`;
     }
     function updateTotals(){
-        form.premio = form.capital * 0.002
+        form.premio = (form.remuneracoes*14+form.subsidioRefeicao*11) * 0.02
         form.is = form.premio * 0.005
-        form.total = form.premio + form.is
-        form.encargosLegais = form.is
+        form.inem = form.premio * 0.0025
+        form.fat = form.premio * 0.0015
+        form.total = form.premio + form.is + form.inem + form.fat
         premio.text = "Prémio: " + form.premio.toFixed(2)
-        encargosLegais.text = "Encargos Legais: " + form.encargosLegais.toFixed(2)
+        impostoSelo.text = "Imposto do selo: " + form.is.toFixed(2)
+        inem.text = "INEM: " + form.inem.toFixed(2)
+        fat.text = "FAT (Fundo de Acidentes de Trabalho): " + form.fat.toFixed(2)
+        form.encargosLegais = form.is + form.inem + form.fat
         total.text = "Total: " + form.total.toFixed(2)
     }
 
@@ -45,9 +49,12 @@ Rectangle{
             //anchors.fill: parent
             Layout.fillWidth: true
             Layout.fillHeight: true
-            property real capital: 0.0
+            property real remuneracoes: 0.0
+            property real subsidioRefeicao: 0.0
             property real premio: 0.0
             property real is: 0.0
+            property real inem: 0.0
+            property real fat: 0.0
             property real encargosLegais: 0.0
             property real total: 0.0
             property string dataInicio: ""
@@ -61,15 +68,24 @@ Rectangle{
                     spacing: 20
                     Text{
                         Layout.fillWidth: true
-                        text: "Seguro Multirriscos"
+                        text: "Seguro de Acidentes de Trabalho"
                         font.pixelSize: 24
                     }
                     CustomTextField{
                         //id: capital
                         Layout.fillWidth: true
-                        placeholderText: "Capital (inventários, imóveis, ativos)"
+                        placeholderText: "Total Remunerações Base mês"
                         onTextChanged: {
-                            form.capital = parseFloat(text)
+                            form.remuneracoes = parseFloat(text)
+                            updateTotals()
+                        }
+                    }
+                    CustomTextField{
+                        //id: capital
+                        Layout.fillWidth: true
+                        placeholderText: "Total de Subsídio de Alimentação mês"
+                        onTextChanged: {
+                            form.subsidioRefeicao = parseFloat(text)
                             updateTotals()
                         }
                     }
@@ -111,9 +127,21 @@ Rectangle{
                         font.pixelSize: 14
                     }
                     Text{
-                        id: encargosLegais
+                        id: impostoSelo
                         Layout.fillWidth: true
-                        text: "Encargos Legais:"
+                        text: "Imposto do selo:"
+                        font.pixelSize: 14
+                    }
+                    Text{
+                        id: inem
+                        Layout.fillWidth: true
+                        text: "INEM:"
+                        font.pixelSize: 14
+                    }
+                    Text{
+                        id: fat
+                        Layout.fillWidth: true
+                        text: "FAT (Fundo de Acidentes de Trabalho):"
                         font.pixelSize: 14
                     }
                     Text{
@@ -143,9 +171,11 @@ Rectangle{
                                         "countryCode":"PT"
                                     },
                                     //"dataInicio": form.dataInicio,
-                                    "ramo": "Multirriscos",
+                                    "ramo": "Acidentes de Trabalho",
                                     "premio": form.premio,
                                     "impostoSelo": form.is,
+                                    "inem": form.inem,
+                                    "fat": form.fat,
                                     "encargosLegais": form.encargosLegais,
                                     "total": form.total,
                                     "apolice": "AP3421" + invoiceNumber(),

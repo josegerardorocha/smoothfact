@@ -65,6 +65,9 @@ qt_add_qml_module(appsmoothfact
         QML_FILES seguros/SeguroMultirrisco.qml
     RESOURCES
         README.txt
+        QML_FILES seguros/SeguroAT.qml
+        QML_FILES seguros/SeguroRS.qml
+        QML_FILES seguros/SeguroAuto.qml
 )
 
 

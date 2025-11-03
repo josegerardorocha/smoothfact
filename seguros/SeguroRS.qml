@@ -61,13 +61,13 @@ Rectangle{
                     spacing: 20
                     Text{
                         Layout.fillWidth: true
-                        text: "Seguro Multirriscos"
+                        text: "Seguro de Responsabilidade Civil"
                         font.pixelSize: 24
                     }
                     CustomTextField{
                         //id: capital
                         Layout.fillWidth: true
-                        placeholderText: "Capital (inventários, imóveis, ativos)"
+                        placeholderText: "Capital"
                         onTextChanged: {
                             form.capital = parseFloat(text)
                             updateTotals()
@@ -113,7 +113,7 @@ Rectangle{
                     Text{
                         id: encargosLegais
                         Layout.fillWidth: true
-                        text: "Encargos Legais:"
+                        text: "encargosLegais:"
                         font.pixelSize: 14
                     }
                     Text{
@@ -143,7 +143,7 @@ Rectangle{
                                         "countryCode":"PT"
                                     },
                                     //"dataInicio": form.dataInicio,
-                                    "ramo": "Multirriscos",
+                                    "ramo": "Responsabilidade Civil",
                                     "premio": form.premio,
                                     "impostoSelo": form.is,
                                     "encargosLegais": form.encargosLegais,

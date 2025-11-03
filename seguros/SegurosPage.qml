@@ -38,23 +38,17 @@ Rectangle {
                 anchors.fill: parent
                 id: stack
                 visible: combo.index >= 0
-                Text{
+                SeguroAT{
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    text: "Seguro de Acidentes de Trabalho"
-                    font.pixelSize: 24
                 }
-                Text{
+                SeguroRS{
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    text: "Seguro de Responsabilidade Civil"
-                    font.pixelSize: 24
                 }
-                Text{
+                SeguroAuto{
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    text: "Seguro Automóvel"
-                    font.pixelSize: 24
                 }
                 SeguroMultirrisco{
                     Layout.fillWidth: true

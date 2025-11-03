@@ -27,12 +27,17 @@ Rectangle{
       return `${newDay}/${newMonth}/${newYear}`;
     }
     function updateTotals(){
-        form.premio = form.capital * 0.002
+        form.premio = 218 + form.valor * 0.02
         form.is = form.premio * 0.005
-        form.total = form.premio + form.is
-        form.encargosLegais = form.is
+        form.inem = form.premio * 0.0025
+        form.fat = form.premio * 0.0015
+        form.fga= form.premio * 0.001
+        form.encargosLegais = form.is + form.inem + form.fat + form.fga
+        form.encargos = form.cartaverde
+        form.total = form.premio + form.encargosLegais + form.encargos
         premio.text = "Prémio: " + form.premio.toFixed(2)
         encargosLegais.text = "Encargos Legais: " + form.encargosLegais.toFixed(2)
+        encargos.text = "Encargos: " + form.encargos.toFixed(2)
         total.text = "Total: " + form.total.toFixed(2)
     }
 
@@ -45,10 +50,17 @@ Rectangle{
             //anchors.fill: parent
             Layout.fillWidth: true
             Layout.fillHeight: true
-            property real capital: 0.0
+            property string matricula: ""
+            property string marca: ""
+            property real valor: 0.0
             property real premio: 0.0
             property real is: 0.0
             property real encargosLegais: 0.0
+            property real encargos: 0.0
+            property real inem: 0.0
+            property real fat: 0.0
+            property real cartaverde: 2.32
+            property real fga: 0.0
             property real total: 0.0
             property string dataInicio: ""
             Item{
@@ -61,25 +73,38 @@ Rectangle{
                     spacing: 20
                     Text{
                         Layout.fillWidth: true
-                        text: "Seguro Multirriscos"
+                        text: "Seguro AUTO"
                         font.pixelSize: 24
                     }
                     CustomTextField{
-                        //id: capital
                         Layout.fillWidth: true
-                        placeholderText: "Capital (inventários, imóveis, ativos)"
+                        placeholderText: "Marca"
                         onTextChanged: {
-                            form.capital = parseFloat(text)
+                            form.marca = text
+                            marca.text = "Marca: " + text
+                        }
+                    }
+                    CustomTextField{
+                        Layout.fillWidth: true
+                        placeholderText: "Matrícula"
+                        onTextChanged: {
+                            form.matricula = text
+                            matricula.text = "Matrícula: " + text
+                        }
+                    }
+                    CustomTextField{
+                        Layout.fillWidth: true
+                        placeholderText: "Valor da Viatura"
+                        onTextChanged: {
+                            form.valor = parseFloat(text)
                             updateTotals()
                         }
                     }
                     CustomDateField{
-                        //id: dataInicio
                         Layout.fillWidth: true
                         placeholderText: "Data de início"
                         onTextChanged: {
                             form.dataInicio = text
-                            //console.log("Capital changed to:", text)
                             dataInicio.text = "Data de início: " + text
                         }
                     }
@@ -99,6 +124,18 @@ Rectangle{
                     anchors.margins: 10
                     spacing: 10
                     Text{
+                        id: marca
+                        Layout.fillWidth: true
+                        text: "Marca:"
+                        font.pixelSize: 14
+                    }
+                    Text{
+                        id: matricula
+                        Layout.fillWidth: true
+                        text: "Matrícula:"
+                        font.pixelSize: 14
+                    }
+                    Text{
                         id: dataInicio
                         Layout.fillWidth: true
                         text: "Data de início:"
@@ -114,6 +151,12 @@ Rectangle{
                         id: encargosLegais
                         Layout.fillWidth: true
                         text: "Encargos Legais:"
+                        font.pixelSize: 14
+                    }
+                    Text{
+                        id: encargos
+                        Layout.fillWidth: true
+                        text: "Encargos:"
                         font.pixelSize: 14
                     }
                     Text{
@@ -143,10 +186,17 @@ Rectangle{
                                         "countryCode":"PT"
                                     },
                                     //"dataInicio": form.dataInicio,
-                                    "ramo": "Multirriscos",
+                                    "ramo": "Automóvel",
+                                    "marca": form.marca,
+                                    "matricula": form.matricula,
                                     "premio": form.premio,
                                     "impostoSelo": form.is,
+                                    "inem": form.inem,
+                                    "fat": form.fat,
+                                    "cartaverde": form.cartaverde,
+                                    "fga": form.fga,
                                     "encargosLegais": form.encargosLegais,
+                                    "encargos": form.encargos,
                                     "total": form.total,
                                     "apolice": "AP3421" + invoiceNumber(),
                                     "country":"PT",
