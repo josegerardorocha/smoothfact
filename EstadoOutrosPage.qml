@@ -11,7 +11,7 @@ Rectangle {
 
     Text {
         anchors.centerIn: parent
-        text: "Bank movement, " + username
+        text: "Outro recibo do estado, " + username
         font.pixelSize: 24
         color: "green"
     }

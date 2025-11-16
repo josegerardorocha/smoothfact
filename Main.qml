@@ -8,6 +8,7 @@ ApplicationWindow {
     width: 1400
     height: 700
     visible: true
+    visibility: Window.Maximized
     title: qsTr("SmoothFact")
 
     property Item loginPageRef: null
@@ -64,8 +65,12 @@ ApplicationWindow {
                         submenus: ["Seguros", "Compra"], baseIndex: 3,
                         //icon: faturas
                     },
+                    { title: "Estado",
+                        submenus: ["IRN", "Doc. Alfandegários", "Outros"], baseIndex: 5,
+                        //icon: banco
+                    },
                     { title: "Banco",
-                        submenus: ["Banco"], baseIndex: 5,
+                        submenus: ["Empréstimo"], baseIndex: 8,
                         //icon: banco
                     },
                     { title: "Logout",

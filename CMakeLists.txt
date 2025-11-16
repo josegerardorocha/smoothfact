@@ -30,44 +30,58 @@ qt_add_qml_module(appsmoothfact
         customcontrols/fuse.min.js
         customcontrols/cae.js
         customcontrols/iban_prefix.js
+        customcontrols/country_codes.js
+        customcontrols/CustomCountryCombo.qml
+        customcontrols/CustomCombo.qml
+
+        menu/MainMenu.qml
+        menu/MainStack.qml
+        menu/LogoutIcon.qml
+
+        #invoices/sellinvoice/SellInvoicePage.qml
+        #invoices/sellinvoice/SellInvoiceForm.qml
+        invoices/InvoicePage.qml
+        invoices/InvoiceForm.qml
+
+        invoices/seguros/SegurosPage.qml
+        invoices/seguros/SeguroMultirrisco.qml
+        invoices/seguros/SeguroAT.qml
+        invoices/seguros/SeguroRS.qml
+        invoices/seguros/SeguroAuto.qml
+
+
         Main.qml
         LoginForm.qml
         LoginDialog.qml
         InfoPage.qml
-        InvoicePage.qml
-        BankMovementPage.qml
+
+        BankLoanPage.qml
         HttpRequest.js
         WorkersPage.qml
         VatCheck.js
         VatGen.js
-        InvoiceShowPDF.qml
-        InvoiceForm.qml
-        customcontrols/country_codes.js
-        customcontrols/CustomCountryCombo.qml
+
         CountryAddresses.js
         CompanyNames.js
-        InvoiceShowData.qml
         CompanyData.qml
+        IrnPage.qml
+        DocAlfandegaPage.qml
+        EstadoOutrosPage.qml
+
+        invoices/InvoiceShowPDF.qml
+        InvoiceShowData.qml
         InvoiceShowHeader.qml
         InvoiceShowRows.qml
         InvoiceShowTail.qml
-        menu/MainMenu.qml
-        menu/MainStack.qml
-        menu/LogoutIcon.qml
-        sellinvoice/SellInvoicePage.qml
-        sellinvoice/SellInvoiceForm.qml
-        seguros/SegurosPage.qml
+
     SOURCES
-        pdfcontroller.h       pdfcontroller.cpp
-        pdfimageProvider.h    pdfimageprovider.cpp
-        qrcode.h              qrcode.cpp
-        QML_FILES customcontrols/CustomCombo.qml
-        QML_FILES seguros/SeguroMultirrisco.qml
+        cpp/pdfcontroller.h       cpp/pdfcontroller.cpp
+        cpp/pdfimageProvider.h    cpp/pdfimageprovider.cpp
+        cpp/qrcode.h              cpp/qrcode.cpp
+
     RESOURCES
         README.txt
-        QML_FILES seguros/SeguroAT.qml
-        QML_FILES seguros/SeguroRS.qml
-        QML_FILES seguros/SeguroAuto.qml
+
 )
 
 
@@ -80,6 +94,10 @@ set_target_properties(appsmoothfact PROPERTIES
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
+)
+
+target_include_directories(appsmoothfact
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/cpp
 )
 
 target_link_libraries(appsmoothfact

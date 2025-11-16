@@ -1,14 +1,15 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import "../customcontrols"
+import Smoothfact
+//import "../customcontrols"
 
 Rectangle {
     id: root
     border.width: 1
     border.color: "lightgray"
     width: 600
-    property string tipoOperacao: "venda"
+    property string tipoOperacao: ""
     property bool headerVisible: true
 
     signal addHeader(var data)
@@ -58,7 +59,7 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: 12
         spacing: 12
-        visible: headerVisible
+        visible: root.headerVisible
         CustomDateField{
             id: dateTextField
             Layout.fillWidth: true
@@ -136,12 +137,6 @@ Rectangle {
             enabled: dateTextField.validDate && companyTextField.text !== "" && addressTextArea.text !== "" &&
                      vatTextField.text !== "" && countryCombo.countryCode !== ""
             onClicked: {
-                // console.log("Adicionar header com os seguintes dados:")
-                // console.log("Tipo (Compra/Venda):", tipoOperacao)
-                // console.log("País:", countryCombo.country)
-                // console.log("Empresa:", companyTextField.text)
-                // console.log("Morada:", addressTextArea.text)
-                // console.log("VAT:", vatTextField.text)
                 var data = {
                     "tipoOperacao": root.tipoOperacao,
                     "country": countryCombo.country,
@@ -151,11 +146,10 @@ Rectangle {
                     "nif": vatTextField.text,
                     "date": dateTextField.text
                 }
+                console.log("InvoiceForm.qml: Emitting addHeader with data:", JSON.stringify(data))
 
                 addHeader(data)
-                //headerColumn.visible = false
-                //rowDataColumn.visible = true
-                headerVisible = false
+                root.headerVisible = false
             }
         }
         Item{
@@ -167,7 +161,7 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: 12
         spacing: 12
-        visible: !headerVisible
+        visible: !root.headerVisible
         property real totalLine: 0.0
 
         CustomBinCheckbox{
@@ -229,6 +223,32 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
         }
+        CustomTextArea{
+            id: cargaTextField
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
+            placeholderText: "Local da carga"
+            text: {
+                if(root.tipoOperacao === "venda")
+                    return CompanyData.address + "\nPortugal"
+                else
+                    return addressTextArea.text + "\n" + countryCombo.country
+            }
+            visible: tipoCheckbox.b1Checked === false
+        }
+        CustomTextArea{
+            id: descargaTextField
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
+            placeholderText: "Local da descarga"
+            text: {
+                if(root.tipoOperacao === "venda")
+                    return addressTextArea.text + "\n" + countryCombo.country
+                else
+                    return CompanyData.address + "\nPortugal"
+            }
+            visible: tipoCheckbox.b1Checked === false
+        }
         CustomButton {
             text: "Adicionar linha"
             Layout.alignment: Qt.AlignRight | Qt.AlignBottom
@@ -249,7 +269,9 @@ Rectangle {
                     "desconto": toNumber(descontoTextField.text),
                     "iva": toNumber(ivaTextField.text),
                     "total": rowDataColumn.totalLine,
-                    "motivoIsencao": isencaoTextField.text
+                    "motivoIsencao": isencaoTextField.text,
+                    "carga": cargaTextField.text,
+                    "descarga": descargaTextField.text
                 }
                 addRow(data)
             }

@@ -72,6 +72,10 @@ Rectangle{
             enabled: usernameField.text.length > 0 && passwordField.text.length > 0
             text: "Submit"
             onClicked: root.submitClicked()
+            Keys.onReturnPressed: {
+                if (submitButton.enabled)
+                    root.submitClicked()
+            }
         }
         Text {
             id: errorText

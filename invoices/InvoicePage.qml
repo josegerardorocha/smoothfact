@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-//import QtQuick.Pdf
 import Smoothfact
 
 Rectangle {
@@ -11,7 +10,8 @@ Rectangle {
     Layout.fillWidth: true
     Layout.fillHeight: true
 
-    property string username: "User"
+    //property string username: "User"
+    property alias tipoOperacao: invoiceForm.tipoOperacao
 
     function formatCustomer(country, company, address, vat){
         return {
@@ -34,14 +34,14 @@ Rectangle {
     }
 
     function updateShowDataHeader(data){
-        console.log("-------------SellInvoicePage.qml: updateShowDataHeader called", JSON.stringify(data))
+        console.log("-------------InvoicePage.qml: updateShowDataHeader called", JSON.stringify(data))
         let c1 = formatCustomer(data.country, data.company, data.address, data.nif)
         let c2 = formatCustomer("Portugal", CompanyData.name, CompanyData.address, CompanyData.nif)
         let buyer  = data.tipoOperacao === "venda" ? c1 : c2
         let seller = data.tipoOperacao === "venda" ? c2 : c1
         showData.header = {
             "tipoOperacao": data.tipoOperacao,
-            "country": data.country,
+            "country": seller.country,
             "buyer": buyer,
             "seller": seller,
             "date": data.date,
@@ -55,6 +55,8 @@ Rectangle {
     function updateAddRow(data){
         console.log("InvoicePage.qml: updateAddRow called")
         showData.model.append(data)
+        showData.header.carga = data.carga
+        showData.header.descarga = data.descarga
     }
 
     function updateTotals(){
@@ -111,10 +113,11 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: 20
-            SellInvoiceForm{
-                id: sellInvoiceForm
+            InvoiceForm{
+                id: invoiceForm
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                tipoOperacao: "compra"
                 onAddHeader: (data) => {
                                  // console.log("InvoicePage.qml: Received addHeader signal from InvoiceForm")
                                  updateShowDataHeader(data)
@@ -128,6 +131,7 @@ Rectangle {
                 id: showData
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                Layout.rightMargin: 10
                 visible: true
                 onGeneratePdf: {
                     var rows = []
@@ -144,7 +148,8 @@ Rectangle {
                     viewer.updatePdf()
                 }
                 onClearInvoiceData: {
-                    sellInvoiceForm.headerVisible = true
+                    console.log("********************* InvoicePage.qml: Clearing InvoiceShowData")
+                    invoiceForm.headerVisible = true
                 }
             }
         }

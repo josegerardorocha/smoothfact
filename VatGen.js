@@ -180,7 +180,7 @@ vatGenerators.HR = function() {
     return "HR" + vatnumber + check;
 };
 
-vatGenerators.GB = function() {
+vatGenerators.UK = function() {
     let vatnumber = getRandomDigits(7);
     let sum = 0;
     let weights = [8, 7, 6, 5, 4, 3, 2];

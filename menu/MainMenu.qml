@@ -9,8 +9,17 @@ Item {
 
     property alias model: repeater.model
     property int activeIndex: -1
-    property alias popupVisible: submenuBar.visible
     signal submenuClicked(string menuTitle, string submenuTitle, int submenuIndex)
+
+    function showSubmenu(idx) {
+        activeIndex = idx
+        submenuBar.open()
+    }
+
+    function hideSubmenu() {
+        activeIndex = -1
+        submenuBar.close()
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -23,7 +32,6 @@ Item {
         anchors.fill: parent
         spacing: 0
         Layout.alignment: Qt.AlignRight
-        //height: 50
         Item{
             Layout.fillWidth: true  // Spacer to push menu items to the right
         }
@@ -60,16 +68,8 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true
-                    onEntered: {
-                        menuBar.popupVisible = true
-                        menuBar.activeIndex = index
-                    }
-                    onClicked: {
-                        menuBar.activeIndex = index
-                        menuBar.popupVisible
-                    }
-                    // onExited: {
-                    // }
+                    onEntered: showSubmenu(index)
+                    onClicked: showSubmenu(index)
                 }
             }
         }
@@ -77,15 +77,14 @@ Item {
 
     // Submenu bar that resizes automatically
     Popup {
+        id: submenuBar
         background: Rectangle{
             color: "lightgray"
             border.color: "gray"
             border.width: 1
         }
-        id: submenuBar
         width: parent.width
         y: parent.height
-        visible: false //menuBar.activeIndex >= 0
         z: 100
 
         Behavior on opacity { NumberAnimation { duration: 150 } }
@@ -124,28 +123,18 @@ Item {
                         hoverEnabled: true
                         onClicked: {
                             console.log("Clicked submenu:", modelData)
-                            menuBar.popupVisible = false
                             menuBar.submenuClicked(
                                         menuBar.model[menuBar.activeIndex]?.title || "",
                                         modelData,
                                         (menuBar.model[menuBar.activeIndex]?.baseIndex || 0) + index
                                         )
-                            menuBar.activeIndex = -1
+                            hideSubmenu()
                         }
                     }
                 }
             }
         }
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            propagateComposedEvents: true
-            acceptedButtons: Qt.NoButton
-            // onEntered:{
-            // }
-            onExited: {
-                menuBar.popupVisible = false
-            }
-        }
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside | Popup.CloseOnReleaseOutside |
+                     Popup.CloseOnPressOutsideParent | Popup.CloseOnReleaseOutsideParent
     }
 }

@@ -406,36 +406,36 @@ houseNumber.HR = function() {
     return `${n}`;
 };
 
-// United Kingdom (GB) Address Data
-streetTypes.GB = [
+// United Kingdom (UK) Address Data
+streetTypes.UK = [
     "Street", "Road", "Avenue", "Lane", "Drive", "Close", "Crescent", "Place", "Terrace", "Way"
 ];
 
-streetNames.GB = [
+streetNames.UK = [
     "High", "Station", "Church", "Park", "Victoria", "King", "Queen", "Main", "London", "Mill", "Market",
     "Bridge", "School", "West", "East", "North", "South", "Green", "Hill", "Chapel", "New", "Old", "Castle",
     "Manor", "Garden", "River", "George", "Albert", "York", "Oxford", "Cambridge", "Maple", "Oak", "Elm"
 ];
 
-cities.GB = [
+cities.UK = [
     "London", "Birmingham", "Manchester", "Leeds", "Liverpool", "Bristol", "Sheffield", "Nottingham",
     "Leicester", "Newcastle", "Cardiff", "Edinburgh", "Glasgow", "Belfast", "Southampton", "Coventry",
     "Reading", "Brighton", "Hull", "Aberdeen"
 ];
 
 // Floors and units
-floors.GB = ["Ground Floor", "1st Floor", "2nd Floor", "3rd Floor", "4th Floor"];
-units.GB = ["Flat 1A", "Flat 2B", "Flat 3C", "Apt 1", "Apt 2", "Suite 1", "Suite 2", "Unit 3"];
+floors.UK = ["Ground Floor", "1st Floor", "2nd Floor", "3rd Floor", "4th Floor"];
+units.UK = ["Flat 1A", "Flat 2B", "Flat 3C", "Apt 1", "Apt 2", "Suite 1", "Suite 2", "Unit 3"];
 
 // Postal code: realistic UK format (e.g., "SW1A 1AA", "BS1 5AH")
-postalCode.GB = function() {
+postalCode.UK = function() {
     const letters = () => String.fromCharCode(65 + Math.floor(Math.random() * 26));
     const nums = (n) => Array.from({ length: n }, () => Math.floor(Math.random() * 10)).join("");
     return `${letters()}${Math.random() < 0.5 ? letters() : ""}${nums(1)}${Math.random() < 0.5 ? letters() : ""} ${nums(1)}${letters()}${letters()}`;
 };
 
 // House number: 1–999
-houseNumber.GB = function() {
+houseNumber.UK = function() {
     const n = Math.floor(Math.random() * 999) + 1;
     const letter = Math.random() < 0.2 ? String.fromCharCode(65 + Math.floor(Math.random() * 3)) : "";
     return `${n}${letter}`;

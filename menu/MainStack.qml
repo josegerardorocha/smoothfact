@@ -20,16 +20,25 @@ StackLayout {
         Layout.fillWidth: true
     }
 
-    SellInvoicePage {   // Vendas
+    InvoicePage {   // Vendas
         id: sellInvoicePage
+        tipoOperacao: "venda"
     }
     SegurosPage{   // Seguros
         id: segurosPage
     }
     InvoicePage {   // Compras
-        id: invoicePage
+        id: buyInvoicePage
+        tipoOperacao: "compra"
     }
-    BankMovementPage {
+    IrnPage{
+    }
+    DocAlfandegaPage{
+    }
+    EstadoOutrosPage{
+
+    }
+    BankLoanPage {
         id: bankPage
     }
 

@@ -86,10 +86,11 @@ private:
     QString computeInvoiceQRCode(const QJsonObject &invoice);
     void drawCustomerData(const QJsonObject &customer, QPainter &painter, const QPoint &pos);
     void drawDateNumber(const QString &date, const QString &number, QPainter &painter, const QPoint &pos);
-    void generateVendaPDF(QPainter &painter);
+    void generateFaturaPDF(QPainter &painter);
     void generateSegurosPDF(QPainter &painter);
     QString qrCodeHtml(const QString &qrData, QSize &qrSize);
     QSizeF paintHtml(const QRect &rect, const QString &html, QPainter &painter);
+    QJsonObject titleslanguageJson(const QString &country);
 };
 
 #endif // PDFCONTROLLER_H

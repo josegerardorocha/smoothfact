@@ -2,7 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <QQmlContext>
-#include "pdfimageProvider.h"
+#include "cpp/pdfimageProvider.h"
 
 int main(int argc, char *argv[])
 {
