@@ -33,6 +33,9 @@ qt_add_qml_module(appsmoothfact
         customcontrols/country_codes.js
         customcontrols/CustomCountryCombo.qml
         customcontrols/CustomCombo.qml
+        customcontrols/CustomCustomerSupplierCombo.qml
+
+        #Alfandega/nomenclatura-capitulo.js
 
         menu/MainMenu.qml
         menu/MainStack.qml

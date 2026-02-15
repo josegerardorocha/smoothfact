@@ -23,7 +23,8 @@ public:
     enum InvoiceIDs{
         NULLID,
         VENDA,
-        MULTIRRISCOS
+        MULTIRRISCOS,
+        ALFANDEGA
     };
     Q_ENUM(InvoiceIDs)
     //explicit PDFController(PDFImageProvider *provider, QObject *parent = nullptr);
@@ -88,6 +89,7 @@ private:
     void drawDateNumber(const QString &date, const QString &number, QPainter &painter, const QPoint &pos);
     void generateFaturaPDF(QPainter &painter);
     void generateSegurosPDF(QPainter &painter);
+    void generateAlfandegaPDF(QPainter &painter);
     QString qrCodeHtml(const QString &qrData, QSize &qrSize);
     QSizeF paintHtml(const QRect &rect, const QString &html, QPainter &painter);
     QJsonObject titleslanguageJson(const QString &country);

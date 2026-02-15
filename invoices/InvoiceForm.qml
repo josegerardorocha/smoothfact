@@ -66,6 +66,13 @@ Rectangle {
             Layout.alignment: Qt.AlignTop
             placeholderText: "Data"
         }
+        CustomCustomerSupplierCombo {
+            id: customerSupplierCombo
+            placeholderText: "Cliente"
+            Layout.fillWidth: true
+            //Layout.preferredWidth: 3
+            Layout.alignment: Qt.AlignBottom
+        }
         CustomCountryCombo {
             id: countryCombo
             placeholderText: "País"

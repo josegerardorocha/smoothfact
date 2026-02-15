@@ -66,7 +66,7 @@ ApplicationWindow {
                         //icon: faturas
                     },
                     { title: "Estado",
-                        submenus: ["IRN", "Doc. Alfandegários", "Outros"], baseIndex: 5,
+                        submenus: ["IRN", "Doc. Alfandegário", "Outros"], baseIndex: 5,
                         //icon: banco
                     },
                     { title: "Banco",
