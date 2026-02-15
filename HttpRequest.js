@@ -28,7 +28,7 @@ function post(endpoint, params, callback, requestHeaders) {
                     callback(true, response)
                 } catch (e) {
                     console.log("xhr.responseText", xhr.responseText)
-                    console.log("Error parsing JSON:", e)
+                    console.log(":", e)
                     callback(false, null)
                 }
             } else {
@@ -73,7 +73,7 @@ function get(endpoint, callback) {
                     var response = JSON.parse(xhr.responseText)
                     callback(true, response)
                 } catch (e) {
-                    console.log("Error parsing JSON:", e)
+                    console.log("Error parsing JSON:", e, "; endpoint:", endpoint, "; responseText:", xhr.responseText)
                     callback(false, null)
                 }
             } else {

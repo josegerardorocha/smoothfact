@@ -9,6 +9,21 @@ Item {
     property string countryCode: ""
     property string country: ""
 
+    function selectByValue(value) {
+        // if value is empty or null, index should be -1 (no selection)
+        if (!value) {
+            combo.currentIndex = -1
+            return
+        }
+        for (var i = 0; i < combo.model.count; i++) {
+            var entry = combo.model.get(i)
+            if (entry.code === value || entry.name === value) {
+                combo.currentIndex = i
+                return
+            }
+        }
+    }
+
     implicitHeight: 40
     //implicitWidth: 250
 

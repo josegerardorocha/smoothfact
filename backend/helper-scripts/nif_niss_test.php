@@ -1,5 +1,5 @@
 <?php
-require "nif_niss.php";
+require __DIR__ . "/../nif_niss.php";
 
 $validator = new NIF_NISS();
 

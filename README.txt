@@ -1,2 +1,1 @@
-
-Verificar gerador e validador de NIF espanhol
+Quando os dados da empresa estão vazios, as opções do menu devem estar desabilitadas.

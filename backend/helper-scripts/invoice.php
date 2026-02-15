@@ -1,8 +1,8 @@
 <?php
 
-require_once "session_start.php";
+require_once __DIR__ . "/../session_start.php";
 
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 use Dompdf\Dompdf;
 use Dompdf\Options;

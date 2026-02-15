@@ -7,7 +7,10 @@ Item {
     property alias text: displayTextItem.text
     property string placeholderText: "Cliente"
     property string selectedId: ""
-    property string selectedName: ""
+    property string selectedCompany: ""
+    property string selectedCountry: ""
+    property string selectedAddress: ""
+    property string selectedNIF: ""
     //property string apiUrl: "http://yourserver.com/api/customers.php" // Set your API endpoint
     property bool isLoading: false
     property string errorMessage: ""
@@ -15,54 +18,47 @@ Item {
     implicitHeight: 40
 
     // Signal emitted when data is loaded
-    signal dataLoaded()
+    signal dataChanged()
     signal dataError(string error)
+
+    function safeString(value) {
+        if (value === undefined || value === null) {
+            return ""
+        }
+        if (typeof value === "object") {
+            if (value.$oid !== undefined) {
+                return value.$oid
+            }
+            return ""
+        }
+        return value
+    }
 
     // Function to load data from server
     function loadData() {
         isLoading = true
         errorMessage = ""
         let apiUrl = placeholderText == "Cliente" ? "backend/customers.php" : "backend/suppliers.php"
-        // Http.get(apiUrl, function(response) {
-        //     // Success callback
-        //     try {
-        //         var data = JSON.parse(response)
-        //         theModel.clear()
-        //
-        //         for (let i = 0; i < data.length; ++i) {
-        //             theModel.append(data[i])
-        //         }
-        //
-        //         isLoading = false
-        //         dataLoaded()
-        //     } catch (e) {
-        //         isLoading = false
-        //         errorMessage = "Error parsing data: " + e
-        //         dataError(errorMessage)
-        //         console.error("Parse error:", e)
-        //     }
-        // }, function(error) {
-        //     // Error callback
-        //     isLoading = false
-        //     errorMessage = error
-        //     dataError(error)
-        //     console.error("HTTP error:", error)
-        // })
-
         console.log("Loading customers suppliers from backend...")
 
         HttpRequest.get(apiUrl, function(success, response) {
+            isLoading = false
             if (success && response.status === "ok") {
                 console.log("customers suppliers loaded:", response.count)
-                console.log("customers suppliers loaded:", response.customers[0].name)
                 theModel.clear()
+                // Place an entry 'nova empresa' at the top of the list
+                theModel.append({ id: "new", company: "Nova Empresa", country: "", address: "", nif: "" })
                 for (var i = 0; i < response.customers.length; i++) {
                     theModel.append(response.customers[i])
                     console.log("---------------> customers suppliers:", response.customers[i])
                 }
-                isLoading = false
+                // Always select first entry ("Nova Empresa") regardless of data loaded
+                combo.currentIndex = 0
+                dataChanged()
             } else {
                 console.log("Failed to load customers suppliers:", response)
+                errorMessage = response.error || "Unknown error"
+                dataError(errorMessage)
             }
         })
     }
@@ -102,7 +98,7 @@ Item {
             Text {
                 id: displayTextItem
                 text: root.isLoading ? "Carregando..." : 
-                      (combo.currentIndex >= 0 ? combo.model.get(combo.currentIndex).name : "")
+                      (combo.currentIndex >= 0 ? combo.model.get(combo.currentIndex).company : "")
                 anchors.fill: parent
                 anchors.leftMargin: combo.leftPadding
                 anchors.rightMargin: combo.rightPadding
@@ -160,7 +156,7 @@ Item {
                     id: delegate
                     width: listView.width - scrollBar.width
                     padding: 0
-                    text: model.name
+                    text: model.company
                     highlighted: ListView.isCurrentItem
 
                     background: Rectangle {
@@ -189,8 +185,16 @@ Item {
 
         onCurrentIndexChanged: {
             if (currentIndex >= 0) {
-                root.selectedId = model.get(currentIndex).id
-                root.selectedName = model.get(currentIndex).name
+                var entry = model.get(currentIndex)
+                if (!entry) {
+                    return
+                }
+                root.selectedId = safeString(entry.id || entry._id)
+                root.selectedCompany = safeString(entry.company || entry.name)
+                root.selectedCountry = safeString(entry.country || entry.countryCode)
+                root.selectedAddress = safeString(entry.address)
+                root.selectedNIF = safeString(entry.nif || entry.vat)
+                root.dataChanged()
             }
         }
     }

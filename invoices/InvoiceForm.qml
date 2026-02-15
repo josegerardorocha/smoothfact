@@ -37,6 +37,26 @@ Rectangle {
         console.log("Generated VAT:", vat)
         vatTextField.text = vat
     }
+    function applyCustomerSupplierData() {
+        if (customerSupplierCombo.selectedId === "new") {
+            companyTextField.text = ""
+            addressTextArea.text = ""
+            vatTextField.text = ""
+            countryCombo.selectByValue("")
+            return
+        }
+        if (customerSupplierCombo.selectedId !== "") {
+            console.log("Selected customer/supplier ID:", customerSupplierCombo.selectedId)
+            console.log("Selected customer/supplier company:", customerSupplierCombo.selectedCompany)
+            console.log("Selected customer/supplier country:", customerSupplierCombo.selectedCountry)
+            console.log("Selected customer/supplier address:", customerSupplierCombo.selectedAddress)
+            console.log("Selected customer/supplier NIF:", customerSupplierCombo.selectedNIF)
+        }
+        countryCombo.selectByValue(customerSupplierCombo.selectedCountry)
+        companyTextField.text = customerSupplierCombo.selectedCompany
+        addressTextArea.text = customerSupplierCombo.selectedAddress
+        vatTextField.text = customerSupplierCombo.selectedNIF
+    }
     function toNumber(value) {
         var num = parseFloat(value)
         return (!isNaN(num) && isFinite(num)) ? num : 0
@@ -52,6 +72,35 @@ Rectangle {
 
         //rowDataColumn.totalLine = totalWithTax
         return totalWithTax.toFixed(2)
+    }
+    function saveCustomerSupplier() {
+        // Only save if user selected "new" or the selected ID starts with a temp ID
+        // if (customerSupplierCombo.selectedId !== "new" && customerSupplierCombo.selectedId !== "") {
+        //     console.log("Customer/supplier already in database, skipping save")
+        //     return
+        // }
+        
+        var customerData = {
+            //"name": companyTextField.text,
+            "company": companyTextField.text,
+            "country": countryCombo.country,
+            "countryCode": countryCombo.countryCode,
+            "address": addressTextArea.text,
+            "nif": vatTextField.text
+        }
+        
+        console.log("Saving customer/supplier:", JSON.stringify(customerData))
+        
+        // Determine if saving to customers or suppliers based on tipoOperacao
+        let endpoint = root.tipoOperacao === "venda" ? "backend/customers.php" : "backend/suppliers.php"
+        
+        HttpRequest.post(endpoint, JSON.stringify([customerData]), function(success, response) {
+            if (success) {
+                console.log("Customer/supplier saved successfully:", response)
+            } else {
+                console.log("Failed to save customer/supplier:", response)
+            }
+        }, { "Content-Type": "application/json" })
     }
 
     ColumnLayout {
@@ -72,6 +121,7 @@ Rectangle {
             Layout.fillWidth: true
             //Layout.preferredWidth: 3
             Layout.alignment: Qt.AlignBottom
+            onDataChanged: applyCustomerSupplierData()
         }
         CustomCountryCombo {
             id: countryCombo
@@ -155,6 +205,7 @@ Rectangle {
                 }
                 console.log("InvoiceForm.qml: Emitting addHeader with data:", JSON.stringify(data))
 
+                saveCustomerSupplier()
                 addHeader(data)
                 root.headerVisible = false
             }
