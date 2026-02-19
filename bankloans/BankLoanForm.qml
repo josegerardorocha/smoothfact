@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQml
 import Smoothfact
+import "../javascripts/formatnumber.js" as FormatNumber
 
 Rectangle {
     id: root
@@ -57,7 +58,7 @@ Rectangle {
             "periodicity": periodicityCombo.selectedText,
             "interestRate": interestRateTextField.text,
             "firstPaymentDate": firstPaymentDateField.text,
-            "loanNumber": Math.floor(Math.random() * 900000) + 100000
+            "loanNumber": FormatNumber.randomInvoiceNumber()
         }
         // console.log("Dados do empréstimo:", JSON.stringify(data))
         addLoanData(data)

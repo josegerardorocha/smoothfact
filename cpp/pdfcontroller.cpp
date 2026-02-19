@@ -274,10 +274,10 @@ QJsonObject PDFController::titleslanguageJson(const QString &country)
     else
         return en;
 }
-void PDFController::generateFaturaPDF(QPainter &painter)
+void PDFController::generateBuySellInvoicePDFPDF(QPainter &painter)
 {
     qDebug() << "...........................................................................";
-    qDebug() << " PDFController::generateFaturaPDF. m_pdfData=" << m_pdfData;
+    qDebug() << " PDFController::generateBuySellInvoicePDFPDF. m_pdfData=" << m_pdfData;
     qDebug() << "...........................................................................";
     const QJsonObject header = m_pdfData["header"].toObject();
     const QJsonObject totals = m_pdfData["totais"].toObject();
@@ -970,9 +970,9 @@ void PDFController::generateAlfandegaPDF(QPainter &painter)
     paintHtml(tableRect, text, painter);
 }
 
-void PDFController::generateEmprestimoPDF(QPainter &painter)
+void PDFController::generateLoanPDF(QPainter &painter)
 {
-    qDebug() << "=== generateEmprestimoPDF ===";
+    qDebug() << "=== generateLoanPDF ===";
     QJsonDocument doc(m_pdfData);
     QString jsonStr = QString::fromUtf8(doc.toJson(QJsonDocument::Indented));
     qDebug() << "m_pdfData (JSON):";
@@ -1028,8 +1028,8 @@ void PDFController::generateEmprestimoPDF(QPainter &painter)
 
     // Additional information
     data.exemptionReason = "Não sujeito";
-    data.certificationNumber = "731/AT";
-    data.disclaimer = "Documento elaborado no âmbito do Projeto em Simulação Empresarial - IPCA.";
+    // data.certificationNumber = "731/AT";
+    // data.disclaimer = "Documento elaborado no âmbito do Projeto em Simulação Empresarial - IPCA.";
 
     // Create PDFLoanInvoice generator and generate the PDF
     PDFLoanInvoice generator(painter, data);
@@ -1064,10 +1064,10 @@ void PDFController::generateSamplePDF()
 
     const InvoiceIDs id = static_cast<InvoiceIDs>(m_pdfData["id"].toInt());
     switch(id){
-    case VENDA: generateFaturaPDF(painter); break;
+    case VENDA: generateBuySellInvoicePDFPDF(painter); break;
     case MULTIRRISCOS: generateSegurosPDF(painter); break;
     case ALFANDEGA: generateAlfandegaPDF(painter); break;
-    case EMPRESTIMO: generateEmprestimoPDF(painter); break;
+    case EMPRESTIMO: generateLoanPDF(painter); break;
     case EMPRESTIMO_PRESTACAO: generateEmprestimoPrestacaoPDF(painter); break;
     default:
         qWarning() << "Unknown invoice ID for PDF generation:" << static_cast<int>(id);

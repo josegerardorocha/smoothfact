@@ -87,6 +87,7 @@ qt_add_qml_module(appsmoothfact
         cpp/pdfimageProvider.h    cpp/pdfimageprovider.cpp
         cpp/qrcode.h              cpp/qrcode.cpp
         cpp/pdfloaninvoice.h      cpp/pdfloaninvoice.cpp
+        cpp/pdfinvoice.h          cpp/pdfinvoice.cpp
 
     RESOURCES
         README.txt

@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <QString>
 #include <QDate>
+#include "pdfinvoice.h"
 
 // Data structure for the loan invoice
 struct LoanInvoiceData {
@@ -49,34 +50,21 @@ struct LoanInvoiceData {
     
     // Footer
     QString exemptionReason = "Não sujeito";
-    QString certificationNumber = "731/AT";
-    QString disclaimer = "Documento elaborado no âmbito do Projeto em Simulação Empresarial - IPCA.";
+    // QString certificationNumber = "731/AT";
+    // QString disclaimer = "Documento elaborado no âmbito do Projeto em Simulação Empresarial - IPCA.";
 };
 
-class PDFLoanInvoice {
+class PDFLoanInvoice: public PDFInvoice {
 private:
-    QPainter& painter;
     const LoanInvoiceData& data;
-    int currentY;
-    int margin;
-    int pageWidth;
-    int pageHeight;
-    int contentWidth;
-    
-    // Helper methods
-    QString formatCurrency(double amount);
-    void drawHLine(int y, int startX = -1, int endX = -1);
-    void drawVLine(int x, int startY, int endY);
-    void drawRightAlignedText(int x, int y, const QString& text);
-    void drawCenteredText(int y, const QString& text);
     
     // Section drawing methods
     void drawHeader();
     void drawTitle();
     void drawClientInfoBox();
-    void drawCurrencyInfo();
     void drawLineItemsTable();
     void drawVATSummary();
+    void drawISSummary();
     void drawFooter();
 
 public:
