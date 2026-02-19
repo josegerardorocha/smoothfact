@@ -9,6 +9,7 @@ Item {
     property alias echoMode: textField.echoMode
     property alias text: textField.text
     property alias inputMask: textField.inputMask
+    property alias validator: textField.validator
     property string placeholderText: "Enter text"
 
     // Base TextField

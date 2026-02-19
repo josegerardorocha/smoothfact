@@ -86,7 +86,7 @@ postData = {
                 "VAT":     vat
             },
             "date": formatDate( new Date()),
-            "number": invoiceNumber()
+            "number": randomInvoiceNumber()
         },
         "rows": [
         {

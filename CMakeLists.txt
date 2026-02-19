@@ -59,11 +59,11 @@ qt_add_qml_module(appsmoothfact
         LoginDialog.qml
         InfoPage.qml
 
-        BankLoanPage.qml
-        HttpRequest.js
+        javascripts/HttpRequest.js
+        javascripts/formatnumber.js
+        javascripts/VatCheck.js
+        javascripts/VatGen.js
         WorkersPage.qml
-        VatCheck.js
-        VatGen.js
 
         CountryAddresses.js
         CompanyNames.js
@@ -72,16 +72,21 @@ qt_add_qml_module(appsmoothfact
         DocAlfandegaPage.qml
         EstadoOutrosPage.qml
 
-        invoices/InvoiceShowPDF.qml
+        invoices/ShowPDF.qml
         InvoiceShowData.qml
         InvoiceShowHeader.qml
         InvoiceShowRows.qml
         InvoiceShowTail.qml
 
+        bankloans/BankLoanPage.qml
+        bankloans/BankLoanForm.qml
+        bankloans/BankLoanShowData.qml
+
     SOURCES
         cpp/pdfcontroller.h       cpp/pdfcontroller.cpp
         cpp/pdfimageProvider.h    cpp/pdfimageprovider.cpp
         cpp/qrcode.h              cpp/qrcode.cpp
+        cpp/pdfloaninvoice.h      cpp/pdfloaninvoice.cpp
 
     RESOURCES
         README.txt

@@ -9,7 +9,7 @@ Rectangle{
     // property bool refresh: false
     // anchors.fill: parent
     // JavaScript function to trigger download
-    signal closeInvoiceShowPDF()
+    signal closeShowPDF()
     function updatePdf() {
         // Reset status label when component becomes visible
         //if (refresh) {
@@ -191,7 +191,7 @@ Rectangle{
             Button {
                 text: "Close"
                 //icon.name: "window-close"
-                onClicked: closeInvoiceShowPDF()
+                onClicked: closeShowPDF()
                 //Layout.preferredWidth: 100
             }
             // Label {

@@ -103,6 +103,10 @@ Rectangle {
         }, { "Content-Type": "application/json" })
     }
 
+    function customerSupplierLabel() {
+        return root.tipoOperacao === "compra" ? "Fornecedor" : "Cliente"
+    }
+
     ColumnLayout {
         id: headerColumn
         anchors.fill: parent
@@ -117,7 +121,7 @@ Rectangle {
         }
         CustomCustomerSupplierCombo {
             id: customerSupplierCombo
-            placeholderText: "Cliente"
+            placeholderText: customerSupplierLabel()
             Layout.fillWidth: true
             //Layout.preferredWidth: 3
             Layout.alignment: Qt.AlignBottom
@@ -139,7 +143,7 @@ Rectangle {
                 Layout.fillWidth: true
                 //Layout.preferredWidth: 3
                 Layout.alignment: Qt.AlignTop
-                placeholderText: "Empresa"
+                placeholderText: customerSupplierLabel()
             }
             CustomButton {
                 implicitHeight: addressTextArea.implicitHeight-10

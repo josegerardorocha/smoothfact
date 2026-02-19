@@ -17,14 +17,16 @@ class PDFController : public QObject {
     Q_PROPERTY(bool hasPdf READ hasPdf NOTIFY hasPdfChanged)
     Q_PROPERTY(double zoom READ zoom WRITE setZoom NOTIFY zoomChanged)
     Q_PROPERTY(QObject *provider READ provider WRITE setProvider NOTIFY providerChanged)
-    Q_PROPERTY(QJsonObject pdfData WRITE setPdfData NOTIFY pdfDataChanged)
+    Q_PROPERTY(QJsonObject pdfData READ pdfData WRITE setPdfData NOTIFY pdfDataChanged)
 
 public:
     enum InvoiceIDs{
         NULLID,
         VENDA,
         MULTIRRISCOS,
-        ALFANDEGA
+        ALFANDEGA,
+        EMPRESTIMO,
+        EMPRESTIMO_PRESTACAO
     };
     Q_ENUM(InvoiceIDs)
     //explicit PDFController(PDFImageProvider *provider, QObject *parent = nullptr);
@@ -44,6 +46,7 @@ public:
             emit providerChanged();
         }
     }
+    QJsonObject pdfData() const { return m_pdfData; }
     void setPdfData(const QJsonObject &data) {
         m_pdfData = data;
         emit pdfDataChanged();
@@ -90,6 +93,8 @@ private:
     void generateFaturaPDF(QPainter &painter);
     void generateSegurosPDF(QPainter &painter);
     void generateAlfandegaPDF(QPainter &painter);
+    void generateEmprestimoPDF(QPainter &painter);
+    void generateEmprestimoPrestacaoPDF(QPainter &painter);
     QString qrCodeHtml(const QString &qrData, QSize &qrSize);
     QSizeF paintHtml(const QRect &rect, const QString &html, QPainter &painter);
     QJsonObject titleslanguageJson(const QString &country);

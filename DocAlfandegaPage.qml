@@ -45,12 +45,12 @@ Rectangle {
                 //enabled: header.text !== "" && textModel.count > 0
             }
         }
-        InvoiceShowPDF {
+        ShowPDF {
             id: viewer
             Layout.fillWidth: true
             Layout.fillHeight: true
             // refresh: stackLayout.currentIndex === 1
-            onCloseInvoiceShowPDF: {
+            onCloseShowPDF: {
                 stackLayout.currentIndex = 0
             }
         }

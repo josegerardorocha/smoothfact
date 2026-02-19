@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Smoothfact
+import "../javascripts/formatnumber.js" as FormatNumber
 
 Rectangle {
     id: root
@@ -22,17 +23,6 @@ Rectangle {
         }
     }
 
-    function year(dateText) {
-        // Match DD/MM/YYYY
-        const match = /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/(\d{4})$/.exec(dateText)
-        if (!match)
-            return ""  // Invalid format
-        return match[3] // Return year part
-    }
-    function invoiceNumber() {
-        return Math.floor(Math.random() * 900000) + 100000
-    }
-
     function updateShowDataHeader(data){
         console.log("-------------InvoicePage.qml: updateShowDataHeader called", JSON.stringify(data))
         let c1 = formatCustomer(data.country, data.company, data.address, data.nif)
@@ -45,7 +35,7 @@ Rectangle {
             "buyer": buyer,
             "seller": seller,
             "date": data.date,
-            "number": "FT " + year(data.date) + "/"+ invoiceNumber(),
+            "number": "FT " + FormatNumber.year(data.date) + "/" + FormatNumber.randomInvoiceNumber(),
             "QType": "P/tl",
             "hash": "ABCD1234EFGH5678IJKL9012MNOP3456",
             "iban": "PT50000201231234567890154",
@@ -117,7 +107,7 @@ Rectangle {
                 id: invoiceForm
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                tipoOperacao: "compra"
+                tipoOperacao: root.tipoOperacao
                 onAddHeader: (data) => {
                                  // console.log("InvoicePage.qml: Received addHeader signal from InvoiceForm")
                                  updateShowDataHeader(data)
@@ -153,12 +143,12 @@ Rectangle {
                 }
             }
         }
-        InvoiceShowPDF {
+        ShowPDF {
             id: viewer
             Layout.fillWidth: true
             Layout.fillHeight: true
             // refresh: stackLayout.currentIndex === 1
-            onCloseInvoiceShowPDF: {
+            onCloseShowPDF: {
                 stackLayout.currentIndex = 0
             }
         }

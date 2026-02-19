@@ -33,16 +33,32 @@ try {
             $supplier['created_at'] = $timestamp;
         }
 
-        // Delete all existing documents
-        $deleteResult = $collection->deleteMany([]);
+        // For each supplier, check if one with same company name exists
+        // If yes, replace it; if no, insert new
+        $insertedCount = 0;
+        $replacedCount = 0;
 
-        // Insert new data
-        $result = $collection->insertMany($data);
+        foreach ($data as $supplier) {
+            $filter = ['user' => $user, 'company' => $supplier['company']];
+
+            // Check if exists
+            $existing = $collection->findOne($filter);
+
+            if ($existing) {
+                // Replace the existing document
+                $collection->replaceOne($filter, $supplier);
+                $replacedCount++;
+            } else {
+                // Insert new
+                $collection->insertOne($supplier);
+                $insertedCount++;
+            }
+        }
 
         echo json_encode([
             "status" => "ok",
-            "insertedCount" => $result->getInsertedCount(),
-            "insertedIds" => $result->getInsertedIds()
+            "insertedCount" => $insertedCount,
+            "replacedCount" => $replacedCount
         ]);
     }
 

@@ -12,6 +12,7 @@
 // Simple QR generator using Nayuki’s library
 // (Download https://github.com/nayuki/QR-Code-generator and include QrCode.hpp)
 #include "qrcode.h"
+#include "pdfloaninvoice.h"
 using qrcodegen::QrCode;
 
 //PDFController::PDFController(PDFImageProvider *provider, QObject *parent)
@@ -968,6 +969,82 @@ void PDFController::generateAlfandegaPDF(QPainter &painter)
     qDebug() << "----------------------------------------";
     paintHtml(tableRect, text, painter);
 }
+
+void PDFController::generateEmprestimoPDF(QPainter &painter)
+{
+    qDebug() << "=== generateEmprestimoPDF ===";
+    QJsonDocument doc(m_pdfData);
+    QString jsonStr = QString::fromUtf8(doc.toJson(QJsonDocument::Indented));
+    qDebug() << "m_pdfData (JSON):";
+    qDebug().noquote() << jsonStr;
+
+    // Extract data from m_pdfData
+    const QJsonObject header = m_pdfData["header"].toObject();
+    const QJsonObject seller = header["seller"].toObject();
+    const QJsonObject buyer = header["buyer"].toObject();
+    const QJsonObject loanData = m_pdfData["loanData"].toObject();
+    const QJsonObject isData = loanData["IS"].toObject();
+
+    // Create and populate LoanInvoiceData
+    LoanInvoiceData data;
+
+    // Bank (seller) information
+    data.bankName = seller["company"].toString("Banco IPCA, S.A.");
+    data.bankAddress = seller["address"].toString("Rua da Simulação, n.º 10");
+    data.bankPostalCode = seller["postalCode"].toString("4750-810 Barcelos");
+    data.bankTaxNumber = seller["VAT"].toString("530004585");
+    data.bankCapital = seller["CapitalSocial"].toString("10 000 000.00 €");
+    data.bankRegistry = seller["Conservatoria"].toString("Barcelos");
+
+    // Document information
+    data.documentNumber = header["number"].toString("2050");
+    data.paymentMethod = "Débito Direto"; // Default or from header
+    data.documentType = "Factura-Recibo IS / 2025"; // Can be customized
+
+    // Customer (buyer) information
+    data.customerTaxNumber = buyer["VAT"].toString("525000194");
+    data.customerName = buyer["company"].toString("Empresa Modelo");
+    data.customerAddress = buyer["address"].toString("R. Elias Garcia nº 74");
+    data.customerPostalCode = buyer["postalCode"].toString("4750-144 Barcelos");
+
+    // Contract information
+    data.contractNumber = header["contract"].toString("20256634");
+    data.contractDate = QDate::fromString(header["date"].toString(), "dd/MM/yyyy");
+    data.dueDate = QDate::fromString(loanData["date"].toString(), "dd/MM/yyyy");
+
+    // Currency and exchange
+    data.currency = "EUR";
+    data.exchangeRate = 1.0;
+
+    // Item/amount information
+    data.itemDescription = isData["description"].toString("Imposto Selo Verba 17.1.2 - 0,5%");
+    data.itemAmount = loanData["loanAmount"].toString("4000.00").toDouble();
+    data.stampDuty = isData["value"].toString("4000.00").toDouble();
+    data.vat = 0.00;
+    data.totalAmount = data.itemAmount + data.stampDuty + data.vat;
+
+    // VAT information
+    data.vatRate = "0%";
+
+    // Additional information
+    data.exemptionReason = "Não sujeito";
+    data.certificationNumber = "731/AT";
+    data.disclaimer = "Documento elaborado no âmbito do Projeto em Simulação Empresarial - IPCA.";
+
+    // Create PDFLoanInvoice generator and generate the PDF
+    PDFLoanInvoice generator(painter, data);
+    generator.generate();
+}
+
+void PDFController::generateEmprestimoPrestacaoPDF(QPainter &painter)
+{
+    qDebug() << "=== generateEmprestimoPrestacaoPDF ===";
+    QJsonDocument doc(m_pdfData);
+    QString jsonStr = QString::fromUtf8(doc.toJson(QJsonDocument::Indented));
+    qDebug() << "m_pdfData (JSON):";
+    qDebug().noquote() << jsonStr;
+}
+
 void PDFController::generateSamplePDF()
 {
     QByteArray pdfData;
@@ -990,6 +1067,8 @@ void PDFController::generateSamplePDF()
     case VENDA: generateFaturaPDF(painter); break;
     case MULTIRRISCOS: generateSegurosPDF(painter); break;
     case ALFANDEGA: generateAlfandegaPDF(painter); break;
+    case EMPRESTIMO: generateEmprestimoPDF(painter); break;
+    case EMPRESTIMO_PRESTACAO: generateEmprestimoPrestacaoPDF(painter); break;
     default:
         qWarning() << "Unknown invoice ID for PDF generation:" << static_cast<int>(id);
         break;

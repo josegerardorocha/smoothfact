@@ -1,17 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 import Smoothfact
+import "../../javascripts/formatnumber.js" as FormatNumber
 Rectangle{
-    function invoiceNumber() {
-        return Math.floor(Math.random() * 900000) + 100000
-    }
-    function year(dateText) {
-        // Match DD/MM/YYYY
-        const match = /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/(\d{4})$/.exec(dateText)
-        if (!match)
-            return ""  // Invalid format
-        return match[3] // Return year part
-    }
     function addOneYear(dateStr) {
       // Expect input in DD/MM/YYYY format
       const [day, month, year] = dateStr.split("/").map(Number);
@@ -178,11 +169,11 @@ Rectangle{
                                     "fat": form.fat,
                                     "encargosLegais": form.encargosLegais,
                                     "total": form.total,
-                                    "apolice": "AP3421" + invoiceNumber(),
+                                    "apolice": "AP3421" + FormatNumber.randomInvoiceNumber(),
                                     "country":"PT",
                                     "date":form.dataInicio,
                                     "endDate":addOneYear(form.dataInicio),
-                                    "number": "RC " + year(form.dataInicio) + "/"+ invoiceNumber(),
+                                    "number": "RC " + FormatNumber.year(form.dataInicio) + "/" + FormatNumber.randomInvoiceNumber(),
                                     "hash":"ABCD1234EFGH5678IJKL9012MNOP3456",
                                     "iban":"PT50000201231234567890154",
                                     "atcud":"JJRD3W6T-3",
@@ -205,12 +196,12 @@ Rectangle{
                 }
             }
         }
-        InvoiceShowPDF {
+        ShowPDF {
             id: viewer
             Layout.fillWidth: true
             Layout.fillHeight: true
             // refresh: stackLayout.currentIndex === 1
-            onCloseInvoiceShowPDF: {
+            onCloseShowPDF: {
                 //stackLayout.currentIndex = 0
                 //form.visible = true
                 //viewer.visible = false
