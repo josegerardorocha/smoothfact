@@ -8,6 +8,7 @@ Button {
     implicitWidth: 160
     // Layout.alignment: Qt.AlignHCenter
     flat: true
+    property alias radius: bg.radius
 
     // center the text
     contentItem: Text {

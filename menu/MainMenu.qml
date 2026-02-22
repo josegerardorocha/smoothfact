@@ -54,7 +54,7 @@ Item {
                     Text {
                         id: textItem
                         Layout.alignment: Qt.AlignCenter
-                        color: (menuBar.activeIndex === index) ? "#FFD700" : "white"
+                        color: (menuBar.activeIndex === index || menuItemMouseArea.containsMouse) ? "#FFD700" : "white"
                         text: modelData.title
                         font.pixelSize: 20
                         Layout.rightMargin: 20
@@ -66,9 +66,9 @@ Item {
                 }
 
                 MouseArea {
+                    id: menuItemMouseArea
                     anchors.fill: parent
                     hoverEnabled: true
-                    onEntered: showSubmenu(index)
                     onClicked: showSubmenu(index)
                 }
             }
@@ -122,7 +122,7 @@ Item {
                         anchors.fill: parent
                         hoverEnabled: true
                         onClicked: {
-                            console.log("Clicked submenu:", modelData)
+                            // console.log("Clicked submenu:", modelData)
                             menuBar.submenuClicked(
                                         menuBar.model[menuBar.activeIndex]?.title || "",
                                         modelData,

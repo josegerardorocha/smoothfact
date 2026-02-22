@@ -32,7 +32,7 @@ ScrollView {
                 CompanyData.nif = response.value
                 // console.log("NIF generated:", response.value)
             } else {
-                console.log("NIF generation failed")
+                // console.log("NIF generation failed")
             }
         })
     }
@@ -43,7 +43,7 @@ ScrollView {
                 CompanyData.niss = response.value
                 // console.log("NISS generated:", response.value)
             } else {
-                console.log("NISS generation failed")
+                // console.log("NISS generation failed")
             }
         })
     }
@@ -55,7 +55,7 @@ ScrollView {
                 CompanyData.iban = response.value
                 // console.log("IBAN generated:", response.value)
             } else {
-                console.log("IBAN generation failed")
+                // console.log("IBAN generation failed")
             }
         })
     }

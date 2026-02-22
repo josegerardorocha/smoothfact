@@ -86,18 +86,18 @@ private:
     QJsonObject m_pdfData;
     QByteArray m_currentPdfData;
 
-    QImage generateQrCode(const QString &text);
+    //QImage generateQrCode(const QString &text);
     QString computeInvoiceQRCode(const QJsonObject &invoice);
-    void drawCustomerData(const QJsonObject &customer, QPainter &painter, const QPoint &pos);
-    void drawDateNumber(const QString &date, const QString &number, QPainter &painter, const QPoint &pos);
-    void generateBuySellInvoicePDFPDF(QPainter &painter);
+    //void drawCustomerData(const QJsonObject &customer, QPainter &painter, const QPoint &pos);
+    //void drawDateNumber(const QString &date, const QString &number, QPainter &painter, const QPoint &pos);
+    void generateBuySellInvoicePDF(QPainter &painter);
     void generateSegurosPDF(QPainter &painter);
     void generateAlfandegaPDF(QPainter &painter);
     void generateLoanPDF(QPainter &painter);
     void generateEmprestimoPrestacaoPDF(QPainter &painter);
-    QString qrCodeHtml(const QString &qrData, QSize &qrSize);
-    QSizeF paintHtml(const QRect &rect, const QString &html, QPainter &painter);
-    QJsonObject titleslanguageJson(const QString &country);
+    //QString qrCodeHtml(const QString &qrData, QSize &qrSize);
+    //QSizeF paintHtml(const QRect &rect, const QString &html, QPainter &painter);
+    //QJsonObject titleslanguageJson(const QString &country);
 };
 
 #endif // PDFCONTROLLER_H

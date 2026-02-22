@@ -50,7 +50,7 @@ Rectangle {
     }
 
     function calculateLoan() {
-        console.log("BankLoanForm: Calcular clicado")
+        // console.log("BankLoanForm: Calcular clicado")
         const data = {
             "date": dateTextField.text,
             "loanAmount": loanAmountTextField.text,

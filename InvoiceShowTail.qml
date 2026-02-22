@@ -27,7 +27,7 @@ ColumnLayout{
     //     updateTotals()
     // }
     onTotalsDataChanged: {
-        console.log("++++++++++++++++++ InvoiceShowTail onTotalsDataChanged", JSON.stringify(totalsData))
+        // console.log("++++++++++++++++++ InvoiceShowTail onTotalsDataChanged", JSON.stringify(totalsData))
         updateTotals()
     }
 

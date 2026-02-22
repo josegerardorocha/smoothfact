@@ -2,6 +2,12 @@
 #include <QPainter>
 #include <QFont>
 #include <QRectF>
+#include <QTextDocument>
+#include <QSvgRenderer>
+
+// Simple QR generator using Nayuki’s library
+// (Download https://github.com/nayuki/QR-Code-generator and include QrCode.hpp)
+#include "qrcode.h"
 
 PDFInvoice::PDFInvoice(QPainter& p)
     : m_painter(p)
@@ -27,6 +33,19 @@ void PDFInvoice::drawCenteredText(int x, int y, const QString& text) {
 void PDFInvoice::drawRightAlignedText(int x, int y, const QString& text) {
     int textWidth = m_painter.fontMetrics().horizontalAdvance(text);
     m_painter.drawText(x - textWidth, y, text);
+}
+
+void PDFInvoice::drawMultilineLeftText(int x, int y, const QString& text, int maxWidth) {
+    QStringList lines = text.split('\n');
+    int lineHeight = m_painter.fontMetrics().height();
+    for (const QString& line : lines) {
+        QString elidedLine = line;
+        if (maxWidth > 0) {
+            elidedLine = m_painter.fontMetrics().elidedText(line, Qt::ElideRight, maxWidth);
+        }
+        m_painter.drawText(x, y, elidedLine);
+        y += lineHeight;
+    }
 }
 
 QString PDFInvoice::formatCurrency(double amount) {
@@ -55,5 +74,47 @@ QString PDFInvoice::formatCurrency(double amount) {
         grouped.prepend('-');
     }
 
-    return grouped + ',' + decimalPart;
+    return grouped + ',' + decimalPart + " €";
+}
+
+QImage PDFInvoice::generateQrCode(const QString &text)
+{
+    const qrcodegen::QrCode qr = qrcodegen::QrCode::encodeText(text.toUtf8().constData(), qrcodegen::QrCode::Ecc::LOW);
+    const int mult=4;
+    const int qrSize = qr.getSize();
+    QImage image(qrSize*mult, qrSize*mult, QImage::Format_ARGB32);
+    image.fill(Qt::white);
+
+    QPainter painter(&image);
+    painter.setBrush(Qt::black);
+    painter.setPen(Qt::NoPen);
+    for (int y = 0; y < qrSize; ++y) {
+        for (int x = 0; x < qrSize; ++x) {
+            if (qr.getModule(x, y))
+                painter.drawRect(x*mult, y*mult, mult, mult);
+        }
+    }
+    painter.end();
+
+    //return image.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    return image;
+}
+
+QSizeF PDFInvoice::paintHtml(const QRect &rect, const QString &html)
+{
+    QTextDocument doc;
+    doc.setHtml(html);
+    doc.setTextWidth(rect.width());
+    m_painter.save();
+    m_painter.translate(rect.topLeft());
+    doc.drawContents(&m_painter);
+    m_painter.restore();
+    return doc.size();
+}
+
+void PDFInvoice::renderSvg(const QString &svgContent)
+{
+    m_painter.setRenderHint(QPainter::Antialiasing);
+    QSvgRenderer renderer(svgContent.toUtf8()); // QString -> QByteArray
+    renderer.render(&m_painter, QRectF(0, 0, m_pageWidth, m_pageHeight));
 }

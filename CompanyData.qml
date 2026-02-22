@@ -23,9 +23,9 @@ QtObject {
                 iban    = response.iban
                 banco   = response.banco
                 cae     = response.cae
-                console.log("Company data loaded")
+                // console.log("Company data loaded")
             } else {
-                console.log("Failed to load data")
+                // console.log("Failed to load data")
             }
         })
     }
@@ -42,9 +42,9 @@ QtObject {
         // console.log("submitData params=", params)
         HttpRequest.post("backend/info.php", params, function(success, response) {
             if (success) {
-                console.log("Update successful:", JSON.stringify(response))
+                // console.log("Update successful:", JSON.stringify(response))
             } else {
-                console.log("Update failed")
+                // console.log("Update failed")
             }
         })
     }

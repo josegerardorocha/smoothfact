@@ -5,7 +5,7 @@ project(smoothfact VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Debug)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2 Pdf)
+find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2 Pdf Svg)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -87,10 +87,16 @@ qt_add_qml_module(appsmoothfact
         cpp/pdfimageProvider.h    cpp/pdfimageprovider.cpp
         cpp/qrcode.h              cpp/qrcode.cpp
         cpp/pdfloaninvoice.h      cpp/pdfloaninvoice.cpp
+        cpp/pdfloaninstallmentinvoice.h      cpp/pdfloaninstallmentinvoice.cpp
         cpp/pdfinvoice.h          cpp/pdfinvoice.cpp
+        cpp/pdfbuysellnvoice.h    cpp/pdfbuysellnvoice.cpp
+        cpp/pdfseguros.h          cpp/pdfseguros.cpp
+        cpp/pdfalfandega.h        cpp/pdfalfandega.cpp
 
     RESOURCES
         README.txt
+        images/logo-seguros.png
+        images/logo-banco.png
 
 )
 
@@ -114,6 +120,7 @@ target_link_libraries(appsmoothfact
     PRIVATE Qt6::Quick
     PRIVATE Qt6::QuickControls2
     PRIVATE Qt6::Pdf
+    PRIVATE Qt6::Svg
 )
 
 include(GNUInstallDirs)

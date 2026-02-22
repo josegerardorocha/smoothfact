@@ -150,7 +150,7 @@ Rectangle{
                                     "atcud":"JJRD3W6T-3",
                                     "seller":{
                                         "VAT":"563292610",
-                                        "address":"Rua do Ipca, 145",
+                                        "address":"Rua do Ipca, 145\n4760-034 Barcelos",
                                         "company":"Seguros Ipca, Lda",
                                         "country":"Portugal",
                                         "countryCode":"PT"

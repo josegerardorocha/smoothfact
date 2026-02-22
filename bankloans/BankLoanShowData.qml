@@ -129,7 +129,7 @@ ScrollView {
         let capitalEmDivida = parseFloat(root.header.loanAmount || 0)
         let interestRate = parseFloat(root.header.interestRate/periods/100 || 0)
         let loanTerm = parseInt(root.header.loanTerm || 0)
-        console.log("................... Generating model with:", capitalEmDivida, interestRate, loanTerm, periods)
+        // console.log("................... Generating model with:", capitalEmDivida, interestRate, loanTerm, periods)
 
         for (let i = 0; i < loanTerm; i++) {
             let capital = -ppmt(interestRate, 1, loanTerm-i, capitalEmDivida)
@@ -137,10 +137,10 @@ ScrollView {
             capitalEmDivida -= capital
             model.append({
                 "numero": i+1,
-                "prestacaoMensal": FormatNumber.formatCurrency(juros + capital),
-                "juros": FormatNumber.formatCurrency(juros),
-                "capital": FormatNumber.formatCurrency(capital),
-                "capitalEmDivida": FormatNumber.formatCurrency(capitalEmDivida),
+                "prestacaoMensal": juros + capital,
+                "juros": juros,
+                "capital": capital,
+                "capitalEmDivida": capitalEmDivida,
                 "data": calculateData(root.header.firstPaymentDate, i, periods)
             })
         }
@@ -253,7 +253,7 @@ ScrollView {
         // Installments table
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 300
+            Layout.preferredHeight: 400
             color: "white"
             border.color: "lightgray"
             border.width: 1
@@ -360,14 +360,14 @@ ScrollView {
                             }
 
                             Text {
-                                text: model.prestacaoMensal
+                                text: FormatNumber.formatCurrency(model.prestacaoMensal)
                                 Layout.preferredWidth: parent.width * 0.16
                                 Layout.alignment: Qt.AlignVCenter
                                 font.pixelSize: 12
                             }
 
                             Text {
-                                text: model.juros
+                                text: FormatNumber.formatCurrency(model.juros)
                                 Layout.preferredWidth: parent.width * 0.13
                                 Layout.alignment: Qt.AlignVCenter
                                 font.pixelSize: 12
@@ -375,13 +375,13 @@ ScrollView {
                             }
 
                             Text {
-                                text: model.capital
+                                text: FormatNumber.formatCurrency(model.capital)
                                 Layout.preferredWidth: parent.width * 0.13
                                 Layout.alignment: Qt.AlignVCenter
                                 font.pixelSize: 12
                             }
                              Text {
-                                text: model.capitalEmDivida
+                                text: FormatNumber.formatCurrency(model.capitalEmDivida)
                                 Layout.preferredWidth: parent.width * 0.16
                                 Layout.alignment: Qt.AlignVCenter
                                 font.pixelSize: 12
@@ -395,11 +395,25 @@ ScrollView {
 
                             CustomButton {
                                 text: "Gerar PDF"
-                                Layout.preferredWidth: parent.width * 0.2
+                                Layout.preferredWidth: parent.width * 0.15
+                                Layout.preferredHeight: 28
+                                radius: 6
                                 Layout.alignment: Qt.AlignVCenter
                                 onClicked: {
-                                    console.log("Generate PDF for installment:", model.numero)
-                                    root.generateInstallmentPdf(model)
+                                    // console.log("Generate PDF for installment:", model.numero)
+                                    root.generateInstallmentPdf({
+                                        "installmentNumber": model.numero,
+                                        "monthlyPayment": model.prestacaoMensal,
+                                        "interest": model.juros,
+                                        "principal": model.capital,
+                                        "remainingPrincipal": model.capitalEmDivida,
+                                        "dueDateFrom": model.data,
+                                        "dueDateTo": calculateData(model.data, 1, calculatePeriods()),
+                                        "IS": 0.04 * model.juros,
+                                        "processingCommission": 2.80,
+                                        "commissionStampDuty": 0.11,
+                                        "totalAmount": model.prestacaoMensal + 0.04 * model.juros + 2.80 + 0.11
+                                     })
                                 }
                             }
                         }

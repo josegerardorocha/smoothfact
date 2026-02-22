@@ -6,7 +6,6 @@
 #include <QDate>
 #include <QJsonObject>
 
-
 class PDFInvoice {
 private:
     QPainter& m_painter;
@@ -31,8 +30,13 @@ protected:
     void drawCenteredText(int x, int y, const QString& text);
     void drawLeftAlignedText(int x, int y, const QString& text) { m_painter.drawText(x, y, text);  }
     void drawRightAlignedText(int x, int y, const QString& text);
+    void drawMultilineLeftText(int x, int y, const QString& text, int maxWidth = 0);
 
     QString formatCurrency(double amount);
+    QImage generateQrCode(const QString &text);
+    QSizeF paintHtml(const QRect &rect, const QString &html);
+
+    void renderSvg(const QString &svgContent);
 };
 
 #endif // PDFINVOICE_H

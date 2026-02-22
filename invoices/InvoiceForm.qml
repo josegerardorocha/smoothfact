@@ -19,22 +19,22 @@ Rectangle {
     color: "transparent"
 
     function generateCompanyName(){
-        console.log("countryCombo.countryCode =", countryCombo.countryCode)
+        // console.log("countryCombo.countryCode =", countryCombo.countryCode)
         let name = CompanyNames.generateCompanyName(countryCombo.countryCode)
-        console.log("Company Name:", name)
+        // console.log("Company Name:", name)
         companyTextField.text = name
     }
 
     function generateAddress(){
-        console.log("countryCombo.countryCode =", countryCombo.countryCode)
+        // console.log("countryCombo.countryCode =", countryCombo.countryCode)
         let address = CountryAddresses.generateRandomAddress(countryCombo.countryCode)
-        console.log("Address:", address)
+        // console.log("Address:", address)
         addressTextArea.text = address
     }
     function generateVAT(){
-        console.log("countryCombo.countryCode =", countryCombo.countryCode)
+        // console.log("countryCombo.countryCode =", countryCombo.countryCode)
         let vat = VatGen.generateVat(countryCombo.countryCode)
-        console.log("Generated VAT:", vat)
+        // console.log("Generated VAT:", vat)
         vatTextField.text = vat
     }
     function applyCustomerSupplierData() {
@@ -46,11 +46,11 @@ Rectangle {
             return
         }
         if (customerSupplierCombo.selectedId !== "") {
-            console.log("Selected customer/supplier ID:", customerSupplierCombo.selectedId)
-            console.log("Selected customer/supplier company:", customerSupplierCombo.selectedCompany)
-            console.log("Selected customer/supplier country:", customerSupplierCombo.selectedCountry)
-            console.log("Selected customer/supplier address:", customerSupplierCombo.selectedAddress)
-            console.log("Selected customer/supplier NIF:", customerSupplierCombo.selectedNIF)
+            // console.log("Selected customer/supplier ID:", customerSupplierCombo.selectedId)
+            // console.log("Selected customer/supplier company:", customerSupplierCombo.selectedCompany)
+            // console.log("Selected customer/supplier country:", customerSupplierCombo.selectedCountry)
+            // console.log("Selected customer/supplier address:", customerSupplierCombo.selectedAddress)
+            // console.log("Selected customer/supplier NIF:", customerSupplierCombo.selectedNIF)
         }
         countryCombo.selectByValue(customerSupplierCombo.selectedCountry)
         companyTextField.text = customerSupplierCombo.selectedCompany
@@ -89,16 +89,16 @@ Rectangle {
             "nif": vatTextField.text
         }
         
-        console.log("Saving customer/supplier:", JSON.stringify(customerData))
+        // console.log("Saving customer/supplier:", JSON.stringify(customerData))
         
         // Determine if saving to customers or suppliers based on tipoOperacao
         let endpoint = root.tipoOperacao === "venda" ? "backend/customers.php" : "backend/suppliers.php"
         
         HttpRequest.post(endpoint, JSON.stringify([customerData]), function(success, response) {
             if (success) {
-                console.log("Customer/supplier saved successfully:", response)
+                // console.log("Customer/supplier saved successfully:", response)
             } else {
-                console.log("Failed to save customer/supplier:", response)
+                // console.log("Failed to save customer/supplier:", response)
             }
         }, { "Content-Type": "application/json" })
     }
@@ -207,7 +207,7 @@ Rectangle {
                     "nif": vatTextField.text,
                     "date": dateTextField.text
                 }
-                console.log("InvoiceForm.qml: Emitting addHeader with data:", JSON.stringify(data))
+                // console.log("InvoiceForm.qml: Emitting addHeader with data:", JSON.stringify(data))
 
                 saveCustomerSupplier()
                 addHeader(data)
@@ -322,7 +322,7 @@ Rectangle {
             }
 
             onClicked: {
-                console.log("Adicionar linha:")
+                // console.log("Adicionar linha:")
                 var data = {
                     "tipo": tipoCheckbox.b1Checked ? 'S': 'P',
                     "designacao": designacaoTextField.text,

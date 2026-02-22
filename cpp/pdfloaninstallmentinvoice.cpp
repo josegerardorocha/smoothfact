@@ -1,4 +1,4 @@
-#include "pdfloaninvoice.h"
+#include "pdfloaninstallmentinvoice.h"
 #include <QPainter>
 #include <QFont>
 #include <QFontMetrics>
@@ -7,14 +7,14 @@
 #include <QBrush>
 
 // Constructor
-PDFLoanInvoice::PDFLoanInvoice(QPainter& p, const LoanInvoiceData& d)
+PDFLoanInstallmentInvoice::PDFLoanInstallmentInvoice(QPainter& p, const LoanInstallmentInvoiceData& d)
     : PDFInvoice(p)
     , data(d)
 {
 }
 
 // Main generate function
-void PDFLoanInvoice::generate() {
+void PDFLoanInstallmentInvoice::generate() {
     drawHeader();
     drawTitle();
     drawClientInfoBox();
@@ -25,18 +25,19 @@ void PDFLoanInvoice::generate() {
 }
  
 // Section drawing methods
-void PDFLoanInvoice::drawHeader() {
+void PDFLoanInstallmentInvoice::drawHeader() {
     // Save current Y position
-    int currentY = margin(); //mm2Pixels(10); // Start 10mm from the top
+    int currentY = margin(); // Start from top margin
     
-    // Left side - Bank information
+    // Left side - Bank information with logo
     // Load and draw logo
     QImage logo(":/qt/qml/Smoothfact/images/logo-banco.png");
     if (!logo.isNull()) {
         int width = mm2Pixels(50);
         int height = (logo.height() * width) / logo.width();
-        painter().drawImage(QRect(margin(), currentY-mm2Pixels(2), width, height), logo);
+        painter().drawImage(QRect(margin(), currentY - mm2Pixels(2), width, height), logo);
     }
+    
     int currentX = margin() + mm2Pixels(52);
     QFont headerFont("Arial", 9, QFont::Bold);
     painter().setFont(headerFont);
@@ -47,10 +48,8 @@ void PDFLoanInvoice::drawHeader() {
     QFont normalFont("Arial", 8);
     painter().setFont(normalFont);
     
-    painter().drawText(currentX, currentY, data.bankAddress);
-    currentY += mm2Pixels(4);
-    painter().drawText(currentX, currentY, data.bankPostalCode);
-    currentY += mm2Pixels(4);
+    drawMultilineLeftText(currentX, currentY, data.bankAddress);
+    currentY += mm2Pixels(8);
     painter().drawText(currentX, currentY, QString("Contribuinte Nº: %1").arg(data.bankTaxNumber));
     currentY += mm2Pixels(4);
     painter().drawText(currentX, currentY, QString("Capital Social: %1").arg(data.bankCapital));
@@ -61,8 +60,8 @@ void PDFLoanInvoice::drawHeader() {
     
     // Right side - Customer information
     int rightX = pageWidth()/2 + mm2Pixels(26); // Start 10mm to the right of center
-    int rightY =  margin() +  mm2Pixels(26);
-
+    int rightY = margin() + mm2Pixels(26);
+    
     painter().setFont(headerFont);
     painter().drawText(rightX, rightY, "Exmo.(s) Sr.(s)");
     rightY += mm2Pixels(4);
@@ -71,72 +70,88 @@ void PDFLoanInvoice::drawHeader() {
     painter().drawText(rightX, rightY, data.customerName);
     rightY += mm2Pixels(4);
     drawMultilineLeftText(rightX, rightY, data.customerAddress);
-    // rightY += mm2Pixels(4);
-    // painter().drawText(rightX, rightY, data.customerPostalCode);
 }
 
-void PDFLoanInvoice::drawTitle() {
+void PDFLoanInstallmentInvoice::drawTitle() {
     QFont docNumberFont("Arial", 14, QFont::Bold);
     painter().setFont(docNumberFont);
     int currentY = mm2Pixels(60);
-    drawCenteredText(pageWidth()/2, currentY, data.documentNumber);
+    drawCenteredText(pageWidth()/2, currentY, data.documentType + QString::number(data.documentNumber));
 }
 
-void PDFLoanInvoice::drawClientInfoBox() {
+void PDFLoanInstallmentInvoice::drawClientInfoBox() {
     int currentY = mm2Pixels(62);    
-    // Draw box border
+    // Draw 1st box
     painter().setPen(QPen(Qt::black, 1));
     painter().setBrush(Qt::NoBrush);
     painter().drawRect(margin(), currentY, contentWidth(), mm2Pixels(10));
     // middle line
     painter().drawLine(margin(), currentY + mm2Pixels(5), margin() + contentWidth(), currentY + mm2Pixels(5));
-
-    // vertical lines at 50mm, 90mm, 110mm, 130mm, 150mm, 162mm, 175mm and 190mm
+    // vertical lines at 50mm, 90mm, 110mm, 155mm and 175mm
     int y1 = currentY;
     int y2 = currentY + mm2Pixels(10);
-    int x[] = {
-        mm2Pixels(50),        mm2Pixels(90),        mm2Pixels(110),        mm2Pixels(130),
-        mm2Pixels(150),       mm2Pixels(162),       mm2Pixels(175)
-    };
-    for (int i = 0; i < 7; ++i) {
-        painter().drawLine(x[i], y1, x[i], y2);
-    }
-    const QString labels[] = {
-        "V/Nº Contrib.", "Contrato", "Data", "Vencimento",
-        "Forma Pag.", "Moeda", "Câmbio", "Pag."
-    };
-    const QString labelValues[] = {
-        data.customerTaxNumber,
-        QString("Contrato n.º %1").arg(data.contractNumber),
-        data.contractDate.toString("dd/MM/yyyy"),
-        data.dueDate.toString("dd/MM/yyyy"),
-        data.paymentMethod,
-        data.currency,
-        QString::number(data.exchangeRate, 'f', 4),
-        "1.0000"
-    };
+    painter().drawLine(mm2Pixels(50),  y1, mm2Pixels(50), y2);
+    painter().drawLine(mm2Pixels(90),  y1, mm2Pixels(90), y2);
+    painter().drawLine(mm2Pixels(110), y1, mm2Pixels(110), y2);
+    painter().drawLine(mm2Pixels(155), y1, mm2Pixels(155), y2);
+    painter().drawLine(mm2Pixels(175), y1, mm2Pixels(175), y2);
+
+    int labelY = currentY + mm2Pixels(4);
     QFont labelFont("Arial", 8, QFont::Bold);
     painter().setFont(labelFont);
-    int labelY = currentY + mm2Pixels(4);
-    drawCenteredText((margin() + x[0])/2, labelY, labels[0]);
-    for (int i = 1; i < 7; ++i) {
-        drawCenteredText((x[i-1] + x[i])/2, labelY, labels[i]);
-    }
-    drawCenteredText((margin() + contentWidth() + x[6])/2, labelY, labels[7]);
-    
+    drawCenteredText((margin() + mm2Pixels(50))/2, labelY, "V/Nº Contrib.");
+    drawCenteredText((mm2Pixels(50) + mm2Pixels(90))/2, labelY, "Contrato");
+    drawCenteredText((mm2Pixels(90) + mm2Pixels(110))/2, labelY, "Renda");
+    drawCenteredText((mm2Pixels(110) + mm2Pixels(155))/2, labelY, "Período");
+    drawCenteredText((mm2Pixels(155) + mm2Pixels(175))/2, labelY, "Moeda");
+    drawCenteredText((margin() + contentWidth() + mm2Pixels(175))/2, labelY, "Câmbio");
+
     QFont normalFont("Arial", 8);
     painter().setFont(normalFont);
-    drawCenteredText((margin() + x[0])/2, labelY + mm2Pixels(5), labelValues[0]);
-    for (int i = 1; i < 7; ++i) {
-        drawCenteredText((x[i-1] + x[i])/2, labelY + mm2Pixels(5), labelValues[i]);
-    }
-    drawCenteredText((margin() + contentWidth() + x[6])/2, labelY + mm2Pixels(5), labelValues[7]);
-    drawRightAlignedText(pageWidth() - margin(), labelY + mm2Pixels(10), "Original");
+    labelY += mm2Pixels(5);
+    drawCenteredText((margin() + mm2Pixels(50))/2, labelY, data.customerTaxNumber);
+    drawCenteredText((mm2Pixels(50) + mm2Pixels(90))/2, labelY, QString("Contrato n.º %1").arg(data.contractNumber));
+    drawCenteredText((mm2Pixels(90) + mm2Pixels(110))/2, labelY, QString::number(data.installmentNumber));
+    drawCenteredText((mm2Pixels(110) + mm2Pixels(155))/2, labelY, data.dueDateFrom.toString("dd/MM/yyyy") + " - " + data.dueDateTo.toString("dd/MM/yyyy"));
+    drawCenteredText((mm2Pixels(155) + mm2Pixels(175))/2, labelY, data.currency);
+    drawCenteredText((margin() + contentWidth() + mm2Pixels(175))/2, labelY, QString::number(data.exchangeRate, 'f', 4));
+    drawRightAlignedText(pageWidth() - margin(), labelY + mm2Pixels(4), "Original");
+
+    // Draw 2nd box
+    currentY += mm2Pixels(15);
+    painter().drawRect(margin(), currentY, contentWidth(), mm2Pixels(10));
+    // middle line
+    painter().drawLine(margin(), currentY + mm2Pixels(5), margin() + contentWidth(), currentY + mm2Pixels(5));
+    // vertical lines at 53mm, 93mm, 115mm and 162mm
+    y1 = currentY;
+    y2 = currentY + mm2Pixels(10);
+
+    painter().drawLine(mm2Pixels(53), y1, mm2Pixels(53), y2);
+    painter().drawLine(mm2Pixels(93), y1, mm2Pixels(93), y2);
+    painter().drawLine(mm2Pixels(115), y1, mm2Pixels(115), y2);
+    painter().drawLine(mm2Pixels(162), y1, mm2Pixels(162), y2);
+
+    painter().setFont(labelFont);
+    labelY = currentY + mm2Pixels(4);
+
+    drawCenteredText((margin() + mm2Pixels(53))/2, labelY, "Data");
+    drawCenteredText((mm2Pixels(53) + mm2Pixels(93))/2, labelY, "Vencimento");
+    drawCenteredText((mm2Pixels(93) + mm2Pixels(115))/2, labelY, "Forma Pag.");
+    drawCenteredText((mm2Pixels(115) + mm2Pixels(162))/2, labelY, "Condição Pagamento");
+    drawCenteredText((margin() + contentWidth() + mm2Pixels(162))/2, labelY, "Pag.");
+
+    painter().setFont(normalFont);
+    labelY += mm2Pixels(5);
+    drawCenteredText((margin() + mm2Pixels(53))/2, labelY, data.dueDateFrom.toString("dd/MM/yyyy"));
+    drawCenteredText((mm2Pixels(53) + mm2Pixels(93))/2, labelY, data.dueDateFrom.toString("dd/MM/yyyy"));
+    drawCenteredText((mm2Pixels(93) + mm2Pixels(115))/2, labelY, data.paymentMethod);
+    drawCenteredText((mm2Pixels(115) + mm2Pixels(162))/2, labelY, data.paymentCondition);
+    drawCenteredText((margin() + contentWidth() + mm2Pixels(162))/2, labelY, "1");
 }
 
-void PDFLoanInvoice::drawLineItemsTable() {
+void PDFLoanInstallmentInvoice::drawLineItemsTable() {
 
-    int currentY = mm2Pixels(78);
+    int currentY = mm2Pixels(90);
     // Draw box border
     painter().setPen(QPen(Qt::black, 1));
     painter().setBrush(Qt::NoBrush);
@@ -158,15 +173,30 @@ void PDFLoanInvoice::drawLineItemsTable() {
     currentY += mm2Pixels(9);
     QFont normalFont("Arial", 8);
     painter().setFont(normalFont);
-    drawLeftAlignedText(margin() + mm2Pixels(1), currentY, data.itemDescription);
+    drawLeftAlignedText(margin() + mm2Pixels(1), currentY, "Amortização");
+    drawRightAlignedText(mm2Pixels(125) - mm2Pixels(1), currentY, formatCurrency(data.principal));
+    drawRightAlignedText(margin() + contentWidth() - mm2Pixels(1), currentY, formatCurrency(data.principal));
+    currentY += mm2Pixels(5);
+    drawLeftAlignedText(margin() + mm2Pixels(1), currentY, "Juros");
+    drawRightAlignedText(mm2Pixels(125) - mm2Pixels(1), currentY, formatCurrency(data.interest));
+    drawRightAlignedText(margin() + contentWidth() - mm2Pixels(1), currentY, formatCurrency(data.interest));
+    currentY += mm2Pixels(5);
+    drawLeftAlignedText(margin() + mm2Pixels(1), currentY, "Imposto Selo");
     drawRightAlignedText(mm2Pixels(125) - mm2Pixels(1), currentY, formatCurrency(data.stampDuty));
     drawRightAlignedText(margin() + contentWidth() - mm2Pixels(1), currentY, formatCurrency(data.stampDuty));
-
+    currentY += mm2Pixels(8);
+    drawLeftAlignedText(margin() + mm2Pixels(1), currentY, "Comissão de Processamento");
+    drawRightAlignedText(mm2Pixels(125) - mm2Pixels(1), currentY, formatCurrency(data.processingCommission));
+    drawRightAlignedText(margin() + contentWidth() - mm2Pixels(1), currentY, formatCurrency(data.processingCommission));
+    currentY += mm2Pixels(5);
+    drawLeftAlignedText(margin() + mm2Pixels(1), currentY, "Imposto Selo sobre Comissão");
+    drawRightAlignedText(mm2Pixels(125) - mm2Pixels(1), currentY, formatCurrency(data.commissionStampDuty));
+    drawRightAlignedText(margin() + contentWidth() - mm2Pixels(1), currentY, formatCurrency(data.commissionStampDuty));
 }
 
-void PDFLoanInvoice::drawVATSummary() {
+void PDFLoanInstallmentInvoice::drawVATSummary() {
 
-    int currentY = mm2Pixels(125);
+    int currentY = mm2Pixels(132);
     // Draw box border
     painter().setPen(QPen(Qt::black, 1));
     painter().setBrush(Qt::NoBrush);
@@ -194,12 +224,11 @@ void PDFLoanInvoice::drawVATSummary() {
     drawRightAlignedText(mm2Pixels(60) - mm2Pixels(1), currentY + mm2Pixels(14), formatCurrency(data.vatBase));
     drawRightAlignedText(mm2Pixels(90) - mm2Pixels(1), currentY + mm2Pixels(14), formatCurrency(data.vatAmount));
     drawCenteredText((mm2Pixels(90) + mm2Pixels(120))/2, currentY + mm2Pixels(14), data.exemptionReason);
-
 }
 
-void PDFLoanInvoice::drawISSummary() {
+void PDFLoanInstallmentInvoice::drawISSummary() {
     int currentX = margin() + contentWidth() - mm2Pixels(60);
-    int currentY = mm2Pixels(125);
+    int currentY = mm2Pixels(132);
 
     painter().drawRect(currentX, currentY, mm2Pixels(60), mm2Pixels(15));
     // middle lines
@@ -210,20 +239,20 @@ void PDFLoanInvoice::drawISSummary() {
 
     QFont normalFont("Arial", 8);
     painter().setFont(normalFont);
-    drawLeftAlignedText(currentX + mm2Pixels(1), currentY + mm2Pixels(4), "Imposto Selo");
-    drawRightAlignedText(currentX + mm2Pixels(60) - mm2Pixels(1), currentY + mm2Pixels(4), formatCurrency(data.stampDuty));
+    drawLeftAlignedText(currentX + mm2Pixels(1), currentY + mm2Pixels(4), "Incidência");
+    drawRightAlignedText(currentX + mm2Pixels(60) - mm2Pixels(1), currentY + mm2Pixels(4), formatCurrency(data.totalAmount));
     drawLeftAlignedText(currentX + mm2Pixels(1), currentY + mm2Pixels(9),"IVA");
     drawRightAlignedText(currentX + mm2Pixels(60) - mm2Pixels(1), currentY + mm2Pixels(9), formatCurrency(data.vatAmount));
     
     QFont labelFont("Arial", 8, QFont::Bold);
     painter().setFont(labelFont);
     drawLeftAlignedText(currentX + mm2Pixels(1), currentY + mm2Pixels(14),"Total");
-    drawRightAlignedText(currentX + mm2Pixels(60) - mm2Pixels(1), currentY + mm2Pixels(14), formatCurrency(data.stampDuty + data.vatAmount));
+    drawRightAlignedText(currentX + mm2Pixels(60) - mm2Pixels(1), currentY + mm2Pixels(14), formatCurrency(data.totalAmount + data.vatAmount));
 }
 
-void PDFLoanInvoice::drawFooter() {
+void PDFLoanInstallmentInvoice::drawFooter() {
 
-    int currentY = mm2Pixels(145);
+    int currentY = mm2Pixels(150);
     QFont normalFont("Arial", 8);
     painter().setFont(normalFont);
     drawLeftAlignedText(margin(), currentY, "65kJ - Processado por Programa não Certificado - Smoothfact");

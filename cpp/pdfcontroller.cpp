@@ -13,6 +13,10 @@
 // (Download https://github.com/nayuki/QR-Code-generator and include QrCode.hpp)
 #include "qrcode.h"
 #include "pdfloaninvoice.h"
+#include "pdfloaninstallmentinvoice.h"
+#include "pdfbuysellnvoice.h"
+#include "pdfseguros.h"
+#include "pdfalfandega.h"
 using qrcodegen::QrCode;
 
 //PDFController::PDFController(PDFImageProvider *provider, QObject *parent)
@@ -133,6 +137,8 @@ QString PDFController::computeInvoiceQRCode(const QJsonObject &invoice)
     return qr.trimmed();
 }
 
+// TODO; remover daqui. Está implementada em pdfinvoice.cpp
+/*
 QImage PDFController::generateQrCode(const QString &text)
 {
     const QrCode qr = QrCode::encodeText(text.toUtf8().constData(), QrCode::Ecc::LOW);
@@ -155,7 +161,31 @@ QImage PDFController::generateQrCode(const QString &text)
     //return image.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     return image;
 }
+*/
 
+/*
+QImage PDFController::generateQrCode(const QString &text)
+{
+    QString qrData = text;
+    std::vector<uint8_t> qr0 = qrcodegen::QrCode::encodeText(qrData.toStdString().c_str(), qrcodegen::QrCode::Ecc::HIGH);
+    int size = qr0.getSize();
+    QImage image(size, size, QImage::Format_RGB32);
+    image.fill(Qt::white);
+    for(int row = 0; row < size; row++) {
+        for(int col = 0; col < size; col++) {
+            if(qr0.getModule(col, row)) {
+                image.setPixel(col, row, qRgb(0, 0, 0));
+            } else {
+                image.setPixel(col, row, qRgb(255, 255, 255));
+            }
+        }
+    }
+    QImage scaledImage = image.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    return scaledImage;
+}
+*/
+
+/*
 void PDFController::drawCustomerData(const QJsonObject &customer, QPainter &painter, const QPoint &pos)
 {
     QRect pageRect = painter.viewport();
@@ -188,6 +218,7 @@ void PDFController::drawCustomerData(const QJsonObject &customer, QPainter &pain
     // painter.restore();
 }
 
+/*
 void PDFController::drawDateNumber(const QString &date, const QString &number,
                                    QPainter &painter, const QPoint &pos)
 {
@@ -211,7 +242,9 @@ void PDFController::drawDateNumber(const QString &date, const QString &number,
     // doc.drawContents(&painter);
     // painter.restore();
 }
+*/
 
+/*
 QString PDFController::qrCodeHtml(const QString &qrData, QSize &qrSize)
 {
     QImage qr = generateQrCode(qrData);
@@ -223,7 +256,9 @@ QString PDFController::qrCodeHtml(const QString &qrData, QSize &qrSize)
     QString base64 = QString::fromLatin1(byteArray.toBase64().data());
     return QString("data:image/png;base64,") + base64;
 }
+*/
 
+/*
 QSizeF PDFController::paintHtml(const QRect &rect, const QString &html, QPainter &painter)
 {
     QTextDocument doc;
@@ -238,7 +273,9 @@ QSizeF PDFController::paintHtml(const QRect &rect, const QString &html, QPainter
     painter.restore();
     return doc.size();
 }
+*/
 
+/*
 QJsonObject PDFController::titleslanguageJson(const QString &country)
 {
     // PT section
@@ -274,700 +311,279 @@ QJsonObject PDFController::titleslanguageJson(const QString &country)
     else
         return en;
 }
-void PDFController::generateBuySellInvoicePDFPDF(QPainter &painter)
+*/
+
+/*
+QSizeF PDFController::paintHtml(const QRect &rect, const QString &html, QPainter &painter)
 {
-    qDebug() << "...........................................................................";
-    qDebug() << " PDFController::generateBuySellInvoicePDFPDF. m_pdfData=" << m_pdfData;
-    qDebug() << "...........................................................................";
+    QTextDocument doc;
+    //int yposition = rect.y();
+    //QRect tableRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
+    doc.setHtml(html);
+    doc.setTextWidth(rect.width());
+    painter.save();
+    painter.translate(rect.topLeft());
+    doc.drawContents(&painter);
+    //qDebug() << "doc.size():" << doc.size();
+    painter.restore();
+    return doc.size();
+}
+*/
+
+void PDFController::generateBuySellInvoicePDF(QPainter &painter)
+{
+    qDebug() << "=== generateBuySellInvoicePDF ===";
+    QJsonDocument doc(m_pdfData);
+    QString jsonStr = QString::fromUtf8(doc.toJson(QJsonDocument::Indented));
+    qDebug() << "m_pdfData (JSON):";
+    qDebug().noquote() << jsonStr;
+
+    // Extract data from m_pdfData
     const QJsonObject header = m_pdfData["header"].toObject();
+    const QJsonObject seller = header["seller"].toObject();
+    const QJsonObject buyer = header["buyer"].toObject();
+    const QJsonArray rowsArray = m_pdfData["rows"].toArray();
     const QJsonObject totals = m_pdfData["totais"].toObject();
-    bool isPortugal = (header["country"].toString() == "Portugal");
-    QJsonObject titles = titleslanguageJson(header["country"].toString());
 
-    auto isZero = [](double x) {
-        constexpr double tol = 1e-6;
-        return std::fabs(x) < tol;
-    };
-    QRect pageRect = painter.viewport();
-    painter.fillRect(pageRect, Qt::white);
+    // Create and populate BuySellInvoiceData
+    BuySellInvoiceData data;
 
-    drawCustomerData(header["seller"].toObject(), painter, QPoint(100, 160));
-    drawDateNumber(header["date"].toString(), header["number"].toString(),
-                   painter, QPoint(pageRect.width()*2/3, 160));
-    drawCustomerData(header["buyer"].toObject(), painter, QPoint(pageRect.width()/2, 330));
+    // Seller information
+    data.sellerCompany = seller["company"].toString("Empresa Fornecedora");
+    data.sellerAddress = seller["address"].toString("");
+    // data.sellerPostalCode = seller["postalCode"].toString("");
+    data.sellerVAT = seller["VAT"].toString("");
+    data.sellerCountry = seller["country"].toString("");
 
-    QString text = QString() +
-        "<table border='0' cellspacing='0' cellpadding='0' width='100%'>"
-        "  <tr>"
-        "    <td width='10%'><div style='text-align: left; '>" + titles["Tipo"].toString() + "</div></td>"
-        "    <td width='40%'><div style='text-align: left; '>" + titles["Designacao"].toString() + "</div></td>"
-        "    <td width='10%'><div style='text-align: right;'>" + titles["Quant"].toString() + "</div></td>"
-        "    <td width='10%'><div style='text-align: right;'>" + titles["Preco"].toString() + "</div></td>"
-        "    <td width='10%'><div style='text-align: right;'>" + titles["Desc"].toString() + "</div></td>"
-        "    <td width='10%'><div style='text-align: right;'>" + titles["IVA"].toString() + "</div></td>"
-        "    <td width='10%'><div style='text-align: right;'>" + titles["Total"].toString() + "</div></td>"
-        "  </tr>"
-        "</table>"
-        ;
+    // Buyer information
+    data.buyerCompany = buyer["company"].toString("Cliente");
+    data.buyerAddress = buyer["address"].toString("");
+    // data.buyerPostalCode = buyer["postalCode"].toString("");
+    data.buyerVAT = buyer["VAT"].toString("");
+    data.buyerCountry = buyer["country"].toString("");
 
-    int yposition = 510;
-    QRect tableRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
-    QSizeF size = paintHtml(tableRect, text, painter);
-    yposition += int(size.height());
-    painter.drawLine(100, yposition, pageRect.width() - 100, yposition);
+    // Document information
+    data.number = header["number"].toString("FT 001");
+    data.date = header["date"].toString(QDate::currentDate().toString("dd/MM/yyyy"));
+    data.invoiceType = "FATURA";
+    data.country = header["country"].toString("Portugal");
 
-    // rows
-    QChar alineaIsencao('a');
-    QJsonArray rowsArray = m_pdfData["rows"].toArray();
-    text = "<table border='0' cellspacing='0' cellpadding='0' width='100%'>";
-    for(const QJsonValue &value : std::as_const(rowsArray)){
+    // Load line items
+    for (const QJsonValue &value : std::as_const(rowsArray)) {
         QJsonObject row = value.toObject();
-        QString ivaText;
-        if(isPortugal && isZero(row["iva"].toDouble())){
-            ivaText = QString("%1%") + "(" + alineaIsencao + ")";
-            alineaIsencao = QChar(alineaIsencao.unicode() + 1);
-        }
-        else
-            ivaText = QString("%1%");
-        text +=
-            "  <tr>"
-            "    <td width='10%'><div style='text-align: left;'>" + row["tipo"].toString() + "</div></td>"
-            "    <td width='40%'><div style='text-align: left;'>" + row["designacao"].toString() + "</div></td>"
-            "    <td width='10%'><div style='text-align: right;'>" + QString::number(row["quantidade"].toDouble(), 'f', 0) + "</div></td>"
-            "    <td width='10%'><div style='text-align: right;'>" + QString("%1€").arg(row["preco"].toDouble(), 8, 'f', 2, QChar(' '))+"</div></td>"
-            "    <td width='10%'><div style='text-align: right;'>" + QString("%1%").arg(row["desconto"].toDouble(), 8, 'f', 2, QChar(' '))+"</div></td>"
-            "    <td width='10%'><div style='text-align: right;'>" + ivaText.arg(row["iva"].toDouble(), 3, 'f', 0, QChar(' '))+"</div></td>"
-            "    <td width='10%'><div style='text-align: right;'>" + QString("%1€").arg(row["total"].toDouble(), 8, 'f', 2, QChar(' '))+"</div></td>"
-            "  </tr>"
-            ;
-    }
-    text += "</table>";
-
-    tableRect = QRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
-    size = paintHtml(tableRect, text, painter);
-    yposition += int(size.height());
-    painter.drawLine(100, yposition, pageRect.width() - 100, yposition);
-
-    // motivo isenção
-    alineaIsencao = 'a';
-    text =
-        "<table border='0' cellspacing='0' cellpadding='0' width='100%'>"
-        "<tr>"
-           "<td width='80%' valign='top'>"
-           "<table border='0' cellspacing='0' cellpadding='4' width='100%'>";
-
-    if(isPortugal){
-        for(const QJsonValue &value : std::as_const(rowsArray)){
-            QJsonObject row = value.toObject();
-            if(isZero(row["iva"].toDouble())){
-                text += "<tr><td style='text-align: left;'>";
-                text += QString("(") + alineaIsencao + ") - " + row["motivoIsencao"].toString() + "</td></tr>";
-                alineaIsencao = QChar(alineaIsencao.unicode() + 1);
-            }
-        }
-    }
-    text += "</table></td>";
-
-    // totais
-    text += "<td width='20%'valign='top'>"
-        "<table border='1' cellspacing='0' cellpadding='4' width='100%'>"
-        "<tr>"
-        "<td width='50%' align='right'>" + titles["Total sem iva"].toString() + ":</td>"
-        "<td width='50%' align='right'>" + QString("%1€").arg(totals["totalSemIva"].toDouble(),   8, 'f', 2, QChar(' ')) + "</td>"
-        "</tr>"
-        "<tr>"
-        "<td width='50%' align='right'>" + titles["Desconto"].toString() + ":</td>"
-        "<td width='50%' align='right'>" + QString("%1€").arg(totals["descontoTotal"].toDouble(),   8, 'f', 2, QChar(' ')) + "</td>"
-        "</tr>"
-        "<tr>"
-        "<td width='50%' align='right'>" + titles["Valor de IVA"].toString() + ":</td>"
-        "<td width='50%' align='right'>" + QString("%1€").arg(totals["totalDeIva"].toDouble(),   8, 'f', 2, QChar(' ')) + "</td>"
-        "</tr>"
-        "<tr>"
-        "<td width='50%' align='right'><b>" + titles["Total com IVA"].toString() + ":</b></td>"
-        "<td width='50%' align='right'><b>" + QString("%1€").arg(totals["totalGeral"].toDouble(),   8, 'f', 2, QChar(' ')) + "</b></td>"
-        "</tr>"
-        ;
-    text += "</table>";
-
-    text += "</td></tr></table>";
-
-    tableRect = QRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
-    size = paintHtml(tableRect, text, painter);
-
-    if(isPortugal){
-        // QR code
-        QString qrs = computeInvoiceQRCode(m_pdfData);
-        QSize qrSize;
-        QString qrStr = qrCodeHtml(qrs, qrSize);
-
-        // resumo do iva e desenho do qr code
-        double taxasIva[]{
-            0.0,
-            totals["ivaRed"].toDouble(),
-            totals["ivaInt"].toDouble(),
-            totals["ivaNorm"].toDouble()
-        };
-        double baseesIva[]{
-            totals["baseIvaIsento"].toDouble(),
-            totals["baseIvaRed"].toDouble(),
-            totals["baseIvaInt"].toDouble(),
-            totals["baseIvaNorm"].toDouble()
-        };
-
-        text =
-            "<table border='0' cellspacing='0' cellpadding='0' width='100%'>"
-            "<tr>"
-            "    <td width='60%' valign='top'>"
-            "        <b>Resumo do IVA</b><br>"
-            "        <table border='1' cellspacing='0' cellpadding='4' width='100%'>"
-            "            <tr>"
-            "                <td width='34%' align='left'>Taxa IVA</td>"
-            "                <td width='33%' align='left'>Valor base</td>"
-            "                <td width='33%' align='left'>Valor IVA</td>"
-            "            </tr>";
-
-        for(int i=0; i<4; ++i){
-            if(!isZero(baseesIva[i])){
-                double valorIvaCalc = baseesIva[i] * taxasIva[i] / 100.0;
-                text += QString() +
-                        "<tr>"
-                        "    <td width='34%' align='left'>" + QString::number(taxasIva[i], 'f', 2) + "%</td>"
-                                                                 "    <td width='33%' align='left'>" + QString::number(baseesIva[i], 'f', 2) + "</td>"
-                                                                  "    <td width='33%' align='left'>" + QString::number(valorIvaCalc, 'f', 2) + "</td>"
-                                                                  "</tr>";
-            }
-        }
-        text +=
-            "        </table>"
-            "    </td>"
-            "    <td width='40%' align='right' valign='top'>ATCUD: " + header["atcud"].toString() + "<br>"
-            "        <img src=\"" + qrStr + "\" alt='QR Code'></td>"
-            "</tr>"
-            "</table>"
-            "0r9y - Processado por programa não certificado - SmoothFact<br>"
-            "Serve apenas para fins pedagógicos.";
-
-        yposition = pageRect.height() - 200 - qrSize.height();
-        tableRect = QRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
-        size = paintHtml(tableRect, text, painter);
-    }
-    else{
-        yposition = pageRect.height() - 200;
-        tableRect = QRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
-        paintHtml(tableRect, "Processado por programa não certificado - SmoothFact<br>"
-            "Serve apenas para fins pedagógicos.", painter);
+        BuySellLineItem item;
+        
+        item.tipo = row["tipo"].toString("");
+        item.designacao = row["designacao"].toString("");
+        item.quantidade = row["quantidade"].toDouble(0.0);
+        item.preco = row["preco"].toDouble(0.0);
+        item.desconto = row["desconto"].toDouble(0.0);
+        item.iva = row["iva"].toDouble(0.0);
+        item.total = row["total"].toDouble(0.0);
+        item.motivoIsencao = row["motivoIsencao"].toString("");
+        
+        data.lineItems.push_back(item);
     }
 
-    // local de carga e descarga
-    if(!header["carga"].toString().isEmpty() || !header["descarga"].toString().isEmpty()){
-        text =
-            "<table border='1' cellspacing='0' cellpadding='6' width='100%'>"
-            "<tr>"
-            "    <td width='50%' valign='top'>"
-            "        <b>Local de Carga:</b><br>" + header["carga"].toString().replace("\n", "<br>") +
-            "    </td>"
-            "    <td width='50%' valign='top'>"
-            "        <b>Local de Descarga:</b><br>" + header["descarga"].toString().replace("\n", "<br>") +
-            "    </td>"
-            "</tr>"
-            "</table>";
-        yposition -= 200;
-        tableRect = QRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
-        size = paintHtml(tableRect, text, painter);
-    }
+    // Totals
+    data.totalSemIva = totals["totalSemIva"].toDouble(0.0);
+    data.descontoTotal = totals["descontoTotal"].toDouble(0.0);
+    data.totalDeIva = totals["totalDeIva"].toDouble(0.0);
+    data.totalGeral = totals["totalGeral"].toDouble(0.0);
+    data.baseIvaInt = totals["baseIvaInt"].toDouble(0.0);
+    data.baseIvaIsento = totals["baseIvaIsento"].toDouble(0.0);
+    data.baseIvaNorm = totals["baseIvaNorm"].toDouble(0.0);
+    data.baseIvaRed = totals["baseIvaRed"].toDouble(0.0);
+    data.descontoTotal = totals["descontoTotal"].toDouble(0.0);
+    data.ivaInt = totals["ivaInt"].toDouble(0.0);
+    data.ivaNorm = totals["ivaNorm"].toDouble(0.0);
+    data.ivaRed = totals["ivaRed"].toDouble(0.0);
+
+    // Loading Unloading addresses information
+    data.loadingAddress = header["carga"].toString("");
+    data.unloadingAddress = header["descarga"].toString("");
+
+    // Additional information
+    data.atcudCode = header["atcud"].toString("");
+    data.qrCodeData = computeInvoiceQRCode(m_pdfData);
+    //data.exemptionReason = "Não sujeito";
+    //data.disclaimer = "";
+
+    // Create PDFBuySellInvoice generator and generate the PDF
+    PDFBuySellInvoice generator(painter, data);
+    generator.generate();
 }
 
 void PDFController::generateSegurosPDF(QPainter &painter)
 {
+    qDebug() << "=== generateSegurosPDF ===";
+    QJsonDocument doc(m_pdfData);
+    QString jsonStr = QString::fromUtf8(doc.toJson(QJsonDocument::Indented));
+    qDebug() << "m_pdfData (JSON):";
+    qDebug().noquote() << jsonStr;
+
+    // Extract data from m_pdfData
     const QJsonObject header = m_pdfData["header"].toObject();
+    const QJsonObject seller = header["seller"].toObject();
     const QJsonObject buyer = header["buyer"].toObject();
-    auto isZero = [](double x) {
-        constexpr double tol = 1e-6;
-        return std::fabs(x) < tol;
-    };
-    QRect pageRect = painter.viewport();
 
-    // Page 1
-    qDebug() << "m_pdfData=" << m_pdfData;
-    painter.fillRect(pageRect, Qt::white);
+    // Create and populate SegurosInvoiceData
+    SegurosInvoiceData data;
 
-    drawCustomerData(header["seller"].toObject(), painter, QPoint(100, 160));
-    // drawDateNumber(header["date"].toString(), header["number"].toString(),
-    //                painter, QPoint(pageRect.width()*2/3, 160));
-    // drawCustomerData(header["buyer"].toObject(), painter, QPoint(pageRect.width()/2, 330));
+    // Seller (insurance company) information
+    data.sellerCompany = seller["company"].toString("Seguradora");
+    data.sellerAddress = seller["address"].toString("");
+    data.sellerVAT = seller["VAT"].toString("");
 
-    double is = header["impostoSelo"].toDouble();
-    double inem = header["inem"].toDouble();
-    double fat = header["fat"].toDouble();
-    double fga = header["fga"].toDouble();
-    double cartaVerde = header["cartaVerde"].toDouble();
-    double encargosLegais = header["encargosLegais"].toDouble();
-    double encargos = header["encargos"].toDouble();
-    QString text =
-        "<table border='1' cellspacing='0' cellpadding='6' width='100%'"
-        "  style='border-collapse:collapse; text-align:left;'>"
-        "<tr style='background-color: rgb(200, 200, 200);'>"
-        "  <td style='text-align: center' colspan='8'><b>RECIBO DE PRÉMIO DE SEGURO</b></td>"
-        "</tr>"
-        ;
-    if(header["ramo"] == "Automóvel"){
-        text +=
-        "<tr>"
-        "    <td style='text-align: right' colspan='2'>Matrícula da Viatura</td>"
-        "    <td colspan='2'>"+header["matricula"].toString()+"</td>"
-        "    <td style='text-align: right' colspan='2'>Marca da Viatura</td>"
-        "    <td colspan='2'>"+header["marca"].toString()+"</td>"
-        "</tr>";
-    }
-    else{
-        text +=
-            "<tr><td colspan='8'></td></tr>";
-    }
+    // Buyer (customer) information
+    data.buyerCompany = buyer["company"].toString("Cliente");
+    data.buyerAddress = buyer["address"].toString("");
+    data.buyerVAT = buyer["VAT"].toString("");
 
-    text +=
-        "<tr style='background-color: rgb(200, 200, 200);'>"
-        "  <td colspan='2'>APÓLICE Nº</td>"
-        "  <td colspan='2'>RECIBO</td>"
-        "  <td colspan='2'>INICIO</td>"
-        "  <td colspan='2'>FIM</td>"
-        "</tr>"
-        "<tr>"
-        "  <td colspan='2'>"+header["apolice"].toString()+"</td>"
-        "  <td colspan='2'>"+header["number"].toString()+"</td>"
-        "  <td colspan='2'>"+header["date"].toString()+"</td>"
-        "  <td colspan='2'>"+header["endDate"].toString()+"</td>"
-        "</tr>"
-        "  <tr style='background-color: rgb(200, 200, 200);'>"
-        "  <th colspan='2'>RAMO</th>"
-        "  <th colspan='1'>PRÉMIO</th>"
-        "  <th colspan='2'>ENCARGOS LEGAIS</th>"
-        "  <th colspan='2'>ENCARGOS</th>"
-        "  <th colspan='1'>PRÉMIO TOTAL</th>"
-        "</tr>"
-        "<tr>"
-        "  <td colspan='2'>"+header["ramo"].toString()+"</td>"
-        "  <td colspan='1' style='text-align:right;'>"+QString::number(header["premio"].toDouble(), 'f', 2)+"€</td>"
-        "  <td colspan='2' style='text-align:right;'>"+QString::number(encargosLegais, 'f', 2)+"€</td>"
-        "  <td colspan='2' style='text-align:right;'>"+(encargos > 0.0 ? QString::number(encargos, 'f', 2) + "€" : "") + "</td>"
-        "  <td colspan='1' style='text-align:right;'>"+QString::number(header["total"].toDouble(), 'f', 2)+"€</td>"
-        "</tr>"
-        "<tr style='background-color: rgb(200, 200, 200);'>"
-        "  <th colspan='8'>DETALHE DE ENCARGOS</th>"
-        "</tr>"
-        "<tr>"
-        "  <td colspan='4'>SELO (IMPOSTO DO SELO)</td>"
-        "  <td colspan='2' style='text-align:right;'>"+ (is > 0.0 ? "0.50%": "") + "</td>"
-        "  <td colspan='2 'style='text-align:right;'>"+QString::number(is, 'f', 2)+"€</td>"
-        "</tr>"
-        "<tr>"
-        "  <td colspan='4'>INEM</td>"
-        "  <td colspan='2'  style='text-align:right;'>" + (inem > 0.0 ? "0.25%": "") + "</td>"
-        "  <td colspan='2' style='text-align:right;'>"+QString::number(inem, 'f', 2)+"€</td>"
-        "</tr>"
-        "<tr>"
-        "  <td colspan='4'>SERV.NAC.BOMBEIROS</td>"
-        "  <td colspan='2' style='text-align:right;'></td>"
-        "  <td colspan='2' style='text-align:right;'>0.00€</td>"
-        "</tr>"
-        "<tr>"
-        "  <td colspan='4'>FAT (Fundo de Acidentes de Trabalho)</td>"
-        "  <td colspan='2' style='text-align:right;'>" + (fat > 0.0 ? "0.15%": "") + "</td>"
-        "  <td colspan='2' style='text-align:right;'>"+QString::number(fat, 'f', 2)+"€</td>"
-        "</tr>"
-        "<tr>"
-        "  <td colspan='4'>AGRAVAMENTO</td>"
-        "  <td colspan='2' style='text-align:right;'></td>"
-        "  <td colspan='2' style='text-align:right;'>0.00€</td>"
-        "</tr>"
-        "<tr>"
-        "  <td colspan='4'>CARTA VERDE</td>"
-        "  <td colspan='2' style='text-align:right;'></td>"
-        "  <td colspan='2' style='text-align:right;'>"+QString::number(cartaVerde, 'f', 2)+"€</td>"
-        "</tr>"
-        "<tr>"
-        "  <td colspan='4'>TAXA DE GESTÃO</td>"
-        "  <td colspan='2' style='text-align:right;'></td>"
-        "  <td colspan='2' style='text-align:right;'>0.00€</td>"
-        "</tr>"
-        "<tr>"
-        "  <td colspan='4'>FUNDO DE GARANTIA AUTO</td>"
-        "  <td colspan='2' style='text-align:right;'></td>"
-        "  <td colspan='2' style='text-align:right;'>"+QString::number(fga, 'f', 2)+"€</td>"
-        "</tr>"
-        "<tr style='background-color: rgb(200, 200, 200);'>"
-        "  <th colspan='8'>IDENTIFICAÇÃO DO CLIENTE</th>"
-        "</tr>"
-        "<tr>"
-        "  <td colspan='2'>Nome:</td>"
-        "  <td colspan='6'>"+buyer["company"].toString()+"</td>"
-        "</tr>"
-        "<tr>"
-        "  <td colspan='2'>Morada:</td>"
-        "  <td colspan='6'>"+buyer["address"].toString()+"</td>"
-        "</tr>"
-        "<tr>"
-        "  <td colspan='2'>NIF/NIPC:</td>"
-        "  <td colspan='6'>"+buyer["VAT"].toString()+"</td>"
-        "</tr>"
-        "<tr style='background-color: rgb(200, 200, 200);'>"
-        "  <th colspan='8'>OUTRAS INFORMAÇÕES</th>"
-        "</tr>"
-        "<tr>"
-        "  <td colspan='2'>Emitido:</td>"
-        "  <td colspan='2'>"+header["date"].toString()+"</td>"
-        "  <td colspan='2'>Tipo Recibo:</td>"
-        "  <td colspan='2'>Anual</td>"
-        "</tr>"
-        "</table>";
+    // Document information
+    data.number = header["number"].toString("");
+    data.date = header["date"].toString(QDate::currentDate().toString("dd/MM/yyyy"));
+    data.endDate = header["endDate"].toString("");
+    data.apolice = header["apolice"].toString("");
+    data.currentDate = header["currentDate"].toString(QDate::currentDate().toString("dd/MM/yyyy"));
+    data.receiptType = header["receiptType"].toString("");
 
-    int yposition = 500;
-    QRect tableRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
-    paintHtml(tableRect, text, painter);
-    // QTextDocument doc;
-    // doc.setHtml(text);
-    // doc.setTextWidth(tableRect.width());
-    // painter.save();
-    // painter.translate(tableRect.topLeft());
-    // doc.drawContents(&painter);
-    // painter.restore();
+    // Insurance details
+    data.ramo = header["ramo"].toString("");
+    data.matricula = header["matricula"].toString("");
+    data.marca = header["marca"].toString("");
 
+    // Premium and charges
+    data.premio = header["premio"].toDouble(0.0);
+    data.total = header["total"].toDouble(0.0);
+    data.impostoSelo = header["impostoSelo"].toDouble(0.0);
+    data.inem = header["inem"].toDouble(0.0);
+    data.fat = header["fat"].toDouble(0.0);
+    data.fga = header["fga"].toDouble(0.0);
+    data.cartaVerde = header["cartaVerde"].toDouble(0.0);
+    data.encargosLegais = header["encargosLegais"].toDouble(0.0);
+    data.encargos = header["encargos"].toDouble(0.0);
+    data.bombeiros = header["bombeiros"].toDouble(0.0);
+    data.agravamento = header["agravamento"].toDouble(0.0);
+    data.taxaGestao = header["taxaGestao"].toDouble(0.0);
 
-    // QR code
-    QString qrs = computeInvoiceQRCode(m_pdfData);
-    QSize qrSize;
-    QString qrStr = qrCodeHtml(qrs, qrSize);
-    // QImage qr = generateQrCode(qrs);
-    // QByteArray byteArray;
-    // QBuffer buffer(&byteArray);
-    // buffer.open(QIODevice::WriteOnly);
-    // qr.save(&buffer, "PNG");
-    // QString base64 = QString::fromLatin1(byteArray.toBase64().data());
-    // QString qrStr = QString("data:image/png;base64,") + base64;
-    text =
-        "<table border='0' cellspacing='0' cellpadding='0' width='100%'>"
-        "<tr>"
-        "    <td width='60%' valign='bottom'>"
-        "        0r9y - Processado por programa não certificado - SmoothFact<br>"
-        "        Serve apenas para fins pedagógicos."
-        "    </td>"
-        "    <td width='40%' align='right' valign='top'>ATCUD: " + header["atcud"].toString() + "<br>"
-        "        <img src=\"" + qrStr + "\" alt='QR Code'></td>"
-        "</tr>"
-        "</table>";
-    yposition = pageRect.height() - 200 - qrSize.height();
-    tableRect = QRect(100, yposition, pageRect.width()-200, pageRect.height()-600);
-    paintHtml(tableRect, text, painter);
-    // doc.setHtml(text);
-    // doc.setTextWidth(tableRect.width());
-    // painter.save();
-    // painter.translate(tableRect.topLeft());
-    // doc.drawContents(&painter);
-    // painter.restore();
+    data.percentImpostoSelo = header["percentImpostoSelo"].toDouble(0.0);
+    data.percentInem = header["percentInem"].toDouble(0.0);
+    data.percentBombeiros = header["percentBombeiros"].toDouble(0.0);
+    data.percentFAT = header["percentFAT"].toDouble(0.0);
+    data.percentFGA = header["percentFGA"].toDouble(0.0);
+
+    // Tax information
+    data.atcudCode = header["atcud"].toString("");
+    data.qrCodeData = computeInvoiceQRCode(m_pdfData);
+
+    // Create PDFSegurosInvoice generator and generate the PDF
+    PDFSegurosInvoice generator(painter, data);
+    generator.generate();
 }
 
 void PDFController::generateAlfandegaPDF(QPainter &painter)
 {
-    QRect pageRect = painter.viewport();
-    painter.fillRect(pageRect, Qt::white);
-    QRect tableRect(100, 100, pageRect.width()-200, pageRect.height()-600);
+    qDebug() << "=== generateAlfandegaPDF ===";
+    QJsonDocument doc(m_pdfData);
+    QString jsonStr = QString::fromUtf8(doc.toJson(QJsonDocument::Indented));
+    qDebug() << "m_pdfData (JSON):";
+    qDebug().noquote() << jsonStr;
 
-    QString text = QString() +
-    "<!DOCTYPE html>"
-    "<html lang='pt'>"
-    "<head>"
-    "    <meta charset='UTF-8'>"
-    "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>"
-    "    <title>Declaração Aduaneira (DAU) - Modelo Simplificado</title>"
-    "    <style>"
-    "    /* Basic styling to mimic the form structure */"
-    "    body {"
-    "        font-family: Arial, sans-serif;"
-    "        font-size: 12px;"
-    "        margin: 20px;"
-    "        background-color: red;"//#f4f4f4;"
-    "    }"
-    "    .dau-container {"
-    "        width: " + QString::number(tableRect.width()) + "px;"
-    "        height: " + QString::number(tableRect.height()) + "px;"
-    "        margin: 0 auto;"
-    "        border: 2px solid black;"
-    "        background-color: white;"
-    "        padding: 5px;"
-    "    }"
-    "    table {"
-    "        width: 100%;"
-    "        border-collapse: collapse;"
-    "        table-layout: fixed;"
-    "        border: 1px solid black;"
-    "        background-color: white;"
-    "    }"
-    "    td, th {"
-    //"        border: 1px solid #aaa;"
-    "        padding: 3px;"
-    "        vertical-align: top;"
-    "        height: 30px; /* Standard height for form fields */"
-    "        background-color: white;"
-    "    }"
-    "    .box-title {"
-    "        font-weight: bold;"
-    "        display: block;"
-    "        margin-bottom: 2px;"
-    "        background-color:  #f0f0f0;"
-    "        padding: 1px 3px;"
-    "    }"
-    "    .small-text {"
-    "        font-size: 10px;"
-    "        background-color: white;"
-    "    }"
-    "    .header-box {"
-    "        border: 2px solid black;"
-    "        background-color: #f0f0f0;"
-    "        font-size: 13px;"
-    "        text-align: center;"
-    "        font-weight: bold;"
-    "    }"
-    "    .data {"
-    "        font-weight: 600;"
-    "        color: #000;"
-    "        background-color: white;"
-    "    }"
-    "    .text-right {"
-    "        text-align: right;"
-    "        background-color: white;"
-    "    }"
-    "    .box-47-header th {"
-    "        font-size: 10px;"
-    "        font-weight: normal;"
-    "        background-color: white;"
-    "    }"
-    "    </style>"
-    "</head>"
-    "<body>"
-    "<table class='dau-container'><tr><td>"
-    "    <table>"
-    "        <tr>"
-    "            <td colspan='4' style='width: 44%;'>"
-    "                <p class='box-title'>1. Estância Aduaneira de Destino [cite: 1]</p>"
-    "                <p class='data'>Alfândega do Aeroporto do Porto [cite: 16]</p>"
-    "            </td>"
-    "            <td colspan='4' class='header-box' style='width: 33%;'>"
-    "                COMUNIDADE EUROPEIA [cite: 2]"
-    "                <div style='font-size: 12px; font-weight: normal; margin-top: 5px;'>"
-    "                    DECLARAÇÃO [cite: 3]"
-    "                </div>"
-    "            </td>"
-    "            <td colspan='4' class='text-right' style='width: 23%; padding: 0;'>"
-    "                <table style='border: none;'>"
-    "                    <tr>"
-    "                        <td style='border: none; border-bottom: 1px solid #aaa; padding: 0;'>"
-    "                            <div class='small-text text-right'>Versão 1 [cite: 10]</div>"
-    "                        </td>"
-    "                    </tr>"
-    "                    <tr>"
-    "                        <td style='border: none; border-bottom: 1px solid #aaa; padding: 0;'>"
-    "                            <div class='small-text text-right'>Revisão 0 [cite: 12]</div>"
-    "                        </td>"
-    "                    </tr>"
-    "                    <tr>"
-    "                        <td style='border: none; padding: 0;'>"
-    "                            <div class='data text-right' style='font-size: 12px;'>2025PT00002062317180 [cite: 11]</div>"
-    "                        </td>"
-    "                    </tr>"
-    "                </table>"
-    "            </td>"
-    "        </tr>"
-    "        <tr>"
-    "            <td colspan='6' style='width: 44%;'>"
-    "                <div class='box-title'>2. Expedidor/Exportador [cite: 4]</div>"
-    "                <span class='small-text'>N.º [cite: 5]: NA [cite: 6]</span>"
-    "                <div class='data'>MD TECH ENTERPRISES LIMITED [cite: 7]</div>"
-    "                <div class='data'>FLAT C, 23FL, LUCKY PLAZA [cite: 13]</div>"
-    "                <div class='data'>WAN CHAI [cite: 14], Hong Kong [cite: 18]</div>"
-    "            </td>"
-    "            <td colspan='6' style='width: 56%;'>"
-    "                <div class='box-title'>8. Destinatário [cite: 29]</div>"
-    "                <span class='small-text'>N.º [cite: 30]: PT513014438 [cite: 30]</span>"
-    "                <div class='data'>SMOOTHPURPLE-SCIENCE & ENGINEERING LDA [cite: 35]</div>"
-    "                <div class='data'>RUA DE PICOTO N 127 [cite: 36]</div>"
-    "                <div class='data'>4760-083 VILA NOVA DE FAMALICAO [cite: 37]</div>"
-    "                <div class='data'>Portugal [cite: 38]</div>"
-    "            </td>"
-    "        </tr>"
-    "        <tr>"
-    "            <td colspan='6'>"
-    "                <div class='box-title'>14. Declarante/Representante [cite: 45]</div>"
-    "                <span class='small-text'>N.º [cite: 46]: PT980112664 [cite: 46]</span>"
-    "                <div class='data' style='margin-top: 3px;'>DHL AVIATION NV/SA SUCRUSAL [cite: 51]</div>"
-    "                <div class='small-text'>AEROPORTO DE LISBOA RUA C EDIFICIO 69 3 GAB 306 308 [cite: 51]</div>"
-    "                <div class='small-text'>1700-008 LISBOA [cite: 59], Portugal [cite: 60]</div>"
-    "            </td>"
-    "            <td colspan='6'>"
-    "                <div class='box-title'>7. Número de referência [cite: 24]</div>"
-    "                <div class='data' style='margin-bottom: 5px;'>CE 1509014 [cite: 27]</div>"
-    "                <div class='box-title'>9. Responsável Financeiro [cite: 32]</div>"
-    "                <span class='small-text'>N.º[cite: 33]:</span>"
-    "            </td>"
-    "        </tr>"
-    "        <tr>"
-    "            <td style='width: 8%;'>"
-    "                <div class='box-title'>15. País exped. [cite: 48, 49]</div>"
-    "                <div class='data'>HK [cite: 53]</div>"
-    "            </td>"
-    "            <td style='width: 8%;'>"
-    "                <div class='box-title'>16. País origem [cite: 57]</div>"
-    "                <div class='data'>CN [cite: 98]</div>"
-    "            </td>"
-    "            <td style='width: 8%;'>"
-    "                <div class='box-title'>17. País destino [cite: 58, 50]</div>"
-    "                <div class='data'>PT [cite: 54]</div>"
-    "            </td>"
-    "            <td colspan='4' style='width: 30%;'>"
-    "                <div class='box-title'>18. Identificação e nacionalidade do meio de transporte à partida [cite: 61]</div>"
-    "            </td>"
-    "            <td colspan='5' style='width: 46%;'>"
-    "                <div class='box-title'>20. Condições de Entrega [cite: 63]</div>"
-    "                <span class='small-text'>DAEAE [cite: 64]</span> <span class='data'>DDU [cite: 66] VILA NOVA DE FAMALICAO [cite: 67]</span>"
-    "            </td>"
-    "        </tr>"
-    "        <tr>"
-    "            <td colspan='4'>"
-    "                <div class='box-title'>22. Moeda e montante total facturado [cite: 69]</div>"
-    "                <div class='data'>USD [cite: 73] 196,98 [cite: 74]</div>"
-    "            </td>"
-    "            <td colspan='2'>"
-    "                <div class='box-title'>23. Taxa de Câmbio [cite: 70]</div>"
-    "                <div class='data'>1,0897 [cite: 75]</div>"
-    "            </td>"
-    "            <td colspan='2'>"
-    "                <div class='box-title'>24. Natureza da Transacção [cite: 71, 76]</div>"
-    "                <div class='data'>90 [cite: 101]</div>"
-    "            </td>"
-    "            <td style='width: 8%;'>"
-    "                <div class='box-title'>25. Modo [cite: 77]</div>"
-    "                <div class='data'>4 [cite: 81]</div>"
-    "            </td>"
-    "            <td style='width: 8%;'>"
-    "                <div class='box-title'>26. Modo interior [cite: 78, 86]</div>"
-    "                <div class='data'>4 [cite: 85]</div>"
-    "            </td>"
-    "            <td colspan='2'>"
-    "                <div class='box-title'>46. Valor Estatístico [cite: 118]</div>"
-    "                <div class='data'>180,77 [cite: 120]</div>"
-    "            </td>"
-    "        </tr>"
-    "        <tr>"
-    "            <td colspan='12'>"
-    "                <div class='box-title'>30. Localização das Mercadorias [cite: 93] / 29. Estância Aduaneira de entrada [cite: 91]</div>"
-    "                <div class='data' style='margin-top: 5px;'>DTP00000473020PT [cite: 93] / Alfândega do Aeroporto do Porto [cite: 16]</div>"
-    "            </td>"
-    "        </tr>"
-    "        <tr>"
-    "            <td colspan='12'>"
-    "                <div class='box-title'>31. Volumes e designação das mercadorias [cite: 88, 89]</div>"
-    "                <span class='data'>1 CT Caixa, de cartão ('Carton') 1 LETREIRO OUTROS MOTORES ELÉTRICOS [cite: 90]</span>"
-    "                <div class='small-text' style='margin-top: 5px;'>"
-    "                    Marcas e números - N.º(s) contentor(es) - Quantidades e natureza: [cite: 92]"
-    "                </div>"
-    "                <div class='small-text data'>"
-    "                    BTI 196.86 € VAD 180.77 € [cite: 90]"
-    "                </div>"
-    "            </td>"
-    "        </tr>"
-    "        <tr>"
-    "            <td colspan='1' style='width: 5%;'>"
-    "                <div class='box-title'>32. Adição N.º [cite: 95]</div>"
-    "                <div class='data'>1 [cite: 19]</div>"
-    "            </td>"
-    "            <td colspan='2' style='width: 15%;'>"
-    "                <div class='box-title'>33. Código das mercadorias [cite: 94] (NC)</div>"
-    "                <div class='data'>85011091 [cite: 96]</div>"
-    "            </td>"
-    "            <td style='width: 8%;'>"
-    "                <div class='box-title'>35. Massa Bruta (kg) [cite: 102]</div>"
-    "                <div class='data'>1,7 [cite: 102]</div>"
-    "            </td>"
-    "            <td style='width: 8%;'>"
-    "                <div class='box-title'>38. Massa Líquida (kg) [cite: 102]</div>"
-    "                <div class='data'>1,615 [cite: 102]</div>"
-    "            </td>"
-    "            <td colspan='1' style='width: 8%;'>"
-    "                <div class='box-title'>37. Regime [cite: 99]</div>"
-    "                <div class='data'>4000 [cite: 100]</div>"
-    "            </td>"
-    "            <td style='width: 8%;'>"
-    "                <div class='box-title'>36. Preferência [cite: 104]</div>"
-    "                <div class='data'>100 [cite: 104]</div>"
-    "            </td>"
-    "            <td style='width: 8%;'>"
-    "                <div class='box-title'>41. Unidades Suplementares [cite: 113]</div>"
-    "                <div class='data'>3 [cite: 113]</div>"
-    "            </td>"
-    "            <td colspan='4' style='width: 38%;'>"
-    "                <div class='box-title'>44. Referências especiais/Documentos apresentados [cite: 105, 108]</div>"
-    "                <div class='small-text data'>N740 8224270530 de 2025-04-23 [cite: 108]</div>"
-    "                <div class='small-text data'>BEAEOF0000012GDV de 2017-12-21 [cite: 108]</div>"
-    "                <div class='small-text data'>Menções: DHAB PCEDP VDA 11.21€ [cite: 109]</div>"
-    "            </td>"
-    "        </tr>"
-    "        <tr>"
-    "            <td colspan='8'>"
-    "                <div class='box-title'>47. Cálculo das imposições [cite: 130]</div>"
-    "                <table class='box-47-header'>"
-    "                    <thead>"
-    "                        <tr>"
-    "                            <th style='width: 15%;'>Tipo [cite: 130]</th>"
-    "                            <th style='width: 35%;'>Base de tributação [cite: 121]</th>"
-    "                            <th style='width: 25%;'>Taxa [cite: 122]</th>"
-    "                            <th style='width: 25%;'>Montante [cite: 123]</th>"
-    "                        </tr>"
-    "                    </thead>"
-    "                    <tbody>"
-    "                        <tr>"
-    "                            <td class='data'>A00 [cite: 126]</td>"
-    "                            <td class='data'>180.77 [cite: 127]</td>"
-    "                            <td class='data'>0.027 [cite: 128]</td>"
-    "                            <td class='data'>4.88 [cite: 129]</td>"
-    "                        </tr>"
-    "                        <tr>"
-    "                            <td class='data'>800 [cite: 126]</td>"
-    "                            <td class='data'>196.86 [cite: 127]</td>"
-    "                            <td class='data'>0.23 [cite: 128]</td>"
-    "                            <td class='data'>45.28 [cite: 129]</td>"
-    "                        </tr>"
-    "                    </tbody>"
-    "                </table>"
-    "            </td>"
-    "            <td colspan='4'>"
-    "                <div class='box-title'>B. DADOS CONTABILÍSTICOS [cite: 135]</div>"
-    "                <div class='data' style='margin-top: 5px;'>1) DF 50.16€ [cite: 136]</div>"
-    "                <div class='small-text'>T 2025-05-15 2025/0923289 2025-04-24 [cite: 136]</div>"
-    "                <div class='box-title' style='margin-top: 10px;'>Total: [cite: 137]</div>"
-    "                <div class='data'>50.16 [cite: 138]</div>"
-    "            </td>"
-    "        </tr>"
-    "        <tr>"
-    "            <td colspan='12'>"
-    "                <div class='box-title'>J. CONTROLO PELA ESTÂNCIA ADUANEIRA DE DESTINO [cite: 144]</div>"
-    "                <div style='display: flex; justify-content: space-between; padding: 5px;'>"
-    "                    <div>Resultado: <span class='data'>Aut. Saida: NSTIMP [cite: 147]</span></div>"
-    "                    <div>Data: <span class='data'>2025-04-24 [cite: 148]</span></div>"
-    "                    <div>Assinatura: [cite: 140]</div>"
-    "                </div>"
-    "            </td>"
-    "        </tr>"
-    "    </table>"
-    "    <div style='text-align: center; margin-top: 10px; font-size: 10px;'>"
-    "        PROCESSADO ELETRONICAMENTE, ART 6.º/N.º 1, REG (UE) 952/2013 DO P.E E DO CONSELHO, DE 9/10/2017 E DL 21/2013 [cite: 154]"
-    "    </div>"
-    "</td></tr></table>"
-    "</body>"
-    "</html>";
+    // Create and populate AlfandegaInvoiceData
+    AlfandegaInvoiceData data;
 
-    qDebug() << "----------------------------------------";
-    qDebug() << text;
-    qDebug() << "----------------------------------------";
-    paintHtml(tableRect, text, painter);
+    // Extract data from m_pdfData
+    const QJsonObject header = m_pdfData["header"].toObject();
+    const QJsonObject shipper = header["shipper"].toObject();
+    const QJsonObject consignee = header["consignee"].toObject();
+    const QJsonObject declarant = header["declarant"].toObject();
+
+    // Destination customs authority
+    data.customsAuthority = header["customsAuthority"].toString("Alfândega do Aeroporto do Porto");
+
+    // Shipper/Exporter information
+    data.shipperNumber = shipper["number"].toString("NA");
+    data.shipperCompany = shipper["company"].toString("MD TECH ENTERPRISES LIMITED");
+    data.shipperAddress = shipper["address"].toString("FLAT C, 23FL, LUCKY PLAZA");
+    data.shipperCountry = shipper["country"].toString("Hong Kong");
+
+    // Consignee/Receiver information
+    data.consigneeNumber = consignee["number"].toString("PT513014438");
+    data.consigneeCompany = consignee["company"].toString("SMOOTHPURPLE-SCIENCE & ENGINEERING LDA");
+    data.consigneeAddress = consignee["address"].toString("RUA DE PICOTO N 127");
+    data.consigneePostalCode = consignee["postalCode"].toString("4760-083");
+    data.consigneeCountry = consignee["country"].toString("Portugal");
+
+    // Declarant/Representative information
+    data.declarantNumber = declarant["number"].toString("PT980112664");
+    data.declarantCompany = declarant["company"].toString("DHL AVIATION NV/SA SUCRUSAL");
+    data.declarantAddress = declarant["address"].toString("AEROPORTO DE LISBOA RUA C EDIFICIO 69 3 GAB 306 308");
+    data.declarantPostalCode = declarant["postalCode"].toString("1700-008");
+    data.declarantCountry = declarant["country"].toString("Portugal");
+
+    // Reference
+    data.shipperNumber = header["referenceNumber"].toString("CE 1509014");
+
+    // Countries
+    data.originCountry = header["originCountry"].toString("CN");
+    data.destinationCountry = header["destinationCountry"].toString("PT");
+    data.departureCountry = header["departureCountry"].toString("HK");
+
+    // Transport
+    data.transportMode = header["transportMode"].toString("4");
+    data.inlandTransportMode = header["inlandTransportMode"].toString("4");
+    data.deliveryTerms = header["deliveryTerms"].toString("DDU VILA NOVA DE FAMALICAO");
+
+    // Transaction
+    data.transactionNature = header["transactionNature"].toString("90");
+
+    // Currency
+    data.currency = header["currency"].toString("USD");
+    data.invoicedAmount = header["invoicedAmount"].toString("196.98");
+    data.exchangeRate = header["exchangeRate"].toString("1.0897");
+
+    // Goods
+    data.containerCount = header["containerCount"].toString("1");
+    data.containerTypes = header["containerTypes"].toString("CT (Carton)");
+    data.goodsDescription = header["goodsDescription"].toString("1 LETREIRO OUTROS MOTORES ELÉTRICOS");
+    data.goodsLocation = header["goodsLocation"].toString("DTP00000473020PT");
+    data.entryCustomsAuthority = header["entryCustomsAuthority"].toString("Alfândega do Aeroporto do Porto");
+    data.grossWeight = header["grossWeight"].toString("1.7");
+    data.netWeight = header["netWeight"].toString("1.615");
+    data.statisticalValue = header["statisticalValue"].toString("180.77");
+
+    // Commodity
+    data.commodityCode = header["commodityCode"].toString("85011091");
+    data.preference = header["preference"].toString("100");
+    data.regime = header["regime"].toString("4000");
+    data.supplementaryUnits = header["supplementaryUnits"].toString("3");
+    data.specialReferences = header["specialReferences"].toString("N740 8224270530 de 2025-04-23; BEAEOF0000012GDV de 2017-12-21");
+
+    // Tax information
+    data.dutyType = header["dutyType"].toString("A00");
+    data.dutyBase = header["dutyBase"].toString("180.77");
+    data.dutyRate = header["dutyRate"].toString("0.027");
+    data.dutyAmount = header["dutyAmount"].toString("4.88");
+
+    data.vatType = header["vatType"].toString("800");
+    data.vatBase = header["vatBase"].toString("196.86");
+    data.vatRate = header["vatRate"].toString("0.23");
+    data.vatAmount = header["vatAmount"].toString("45.28");
+
+    // Accounting
+    data.invoiceReference = header["invoiceReference"].toString("DF 50.16€");
+    data.invoiceDate = header["invoiceDate"].toString("2025-05-15");
+    data.totalTaxes = header["totalTaxes"].toString("50.16");
+
+    // Control
+    data.controlResult = header["controlResult"].toString("NSTIMP");
+    data.controlAuthorization = header["controlAuthorization"].toString("Aut. Saida");
+    data.controlDate = header["controlDate"].toString("2025-04-24");
+
+    // Create PDFAlfandega generator and generate the PDF
+    PDFAlfandega generator(painter, data);
+    generator.generate();
 }
 
 void PDFController::generateLoanPDF(QPainter &painter)
@@ -999,7 +615,7 @@ void PDFController::generateLoanPDF(QPainter &painter)
     // Document information
     data.documentNumber = header["number"].toString("2050");
     data.paymentMethod = "Débito Direto"; // Default or from header
-    data.documentType = "Factura-Recibo IS / 2025"; // Can be customized
+    data.documentType = "Fatura-Recibo IS / 2025"; // Can be customized
 
     // Customer (buyer) information
     data.customerTaxNumber = buyer["VAT"].toString("525000194");
@@ -1038,11 +654,108 @@ void PDFController::generateLoanPDF(QPainter &painter)
 
 void PDFController::generateEmprestimoPrestacaoPDF(QPainter &painter)
 {
+    /* 
+    m_pdfData (JSON):
+{
+    "header": {
+        "buyer": {
+            "VAT": "525000194",
+            "address": "R. Elias Garcia n║ 74 \n1234-987 Barcelos ",
+            "company": "Sigma Delta Aero, Lda",
+            "country": "Portugal",
+            "countryCode": "PT"
+        },
+        "contract": "CT3421193293",
+        "number": "FR /407488",
+        "seller": {
+            "CapitalSocial": "5.000.000Ç",
+            "Conservatoria": "Barcelos",
+            "VAT": "530004585",
+            "address": "Rua do Ipca, 10",
+            "company": "Banco Ipca, Lda",
+            "country": "Portugal",
+            "countryCode": "PT"
+        }
+    },
+    "id": 5,
+    "installmentData": {
+        "IS": 0.556478652287177,
+        "dueDate": "22/05/2026",
+        "installmentNumber": 3,
+        "interest": 139.11966307179424,
+        "monthlyPayment": 8423.886728410296,
+        "principal": 8284.767065338501,
+        "remainingPrincipal": 75187.03077773805
+    }
+}
+    */
     qDebug() << "=== generateEmprestimoPrestacaoPDF ===";
     QJsonDocument doc(m_pdfData);
     QString jsonStr = QString::fromUtf8(doc.toJson(QJsonDocument::Indented));
     qDebug() << "m_pdfData (JSON):";
     qDebug().noquote() << jsonStr;
+
+    // Extract data from m_pdfData
+    const QJsonObject header = m_pdfData["header"].toObject();
+    const QJsonObject seller = header["seller"].toObject();
+    const QJsonObject buyer = header["buyer"].toObject();
+    const QJsonObject installmentData = m_pdfData["installmentData"].toObject();
+    const QJsonObject isData = installmentData["IS"].toObject();
+
+    // Create and populate LoanInstallmentInvoiceData
+    LoanInstallmentInvoiceData data;
+
+    // Bank (seller) information
+    data.bankName = seller["company"].toString("");
+    data.bankAddress = seller["address"].toString("");
+    //data.bankPostalCode = seller["postalCode"].toString("CCCCCCC");
+    data.bankTaxNumber = seller["VAT"].toString("");
+    data.bankCapital = seller["CapitalSocial"].toString("");
+    data.bankRegistry = seller["Conservatoria"].toString("");
+
+    // Document information
+    data.documentNumber = header["number"].toInt(0);
+    data.paymentMethod = "Débito Direto"; // Default or from header
+    data.paymentCondition = "Pronto Pagamento";
+    data.documentType = header["type"].toString("Fatura-Recibo FB 2025/"); // Can be customized
+
+    // Customer (buyer) information
+    data.customerTaxNumber = buyer["VAT"].toString("");
+    data.customerName = buyer["company"].toString("");
+    data.customerAddress = buyer["address"].toString("");
+    // data.customerPostalCode = buyer["postalCode"].toString("KKKKKKKKKKKK");
+
+    // Contract information
+    data.contractNumber = header["contract"].toString("");
+    data.contractDate = QDate::fromString(header["date"].toString(), "dd/MM/yyyy");
+    data.dueDateFrom = QDate::fromString(installmentData["dueDateFrom"].toString(), "dd/MM/yyyy");
+    data.dueDateTo = QDate::fromString(installmentData["dueDateTo"].toString(), "dd/MM/yyyy");
+
+    // Currency and exchange
+    data.currency = "EUR";
+    data.exchangeRate = 1.0;
+
+    // Installment information
+    data.installmentNumber = installmentData["installmentNumber"].toInt(0);
+    data.installmentAmount = installmentData["monthlyPayment"].toDouble();
+    data.principal = installmentData["principal"].toDouble();
+    data.interest = installmentData["interest"].toDouble();
+    data.stampDuty = installmentData["IS"].toDouble();
+    data.processingCommission = installmentData["processingCommission"].toDouble();
+    data.commissionStampDuty = installmentData["commissionStampDuty"].toDouble();
+    
+    data.vat = 0.00;
+    data.totalAmount = installmentData["totalAmount"].toDouble();
+
+    // VAT information
+    data.vatRate = "0%";
+
+    // Additional information
+    data.exemptionReason = "Não sujeito";
+
+    // Create PDFLoanInstallmentInvoice generator and generate the PDF
+    PDFLoanInstallmentInvoice generator(painter, data);
+    generator.generate();
 }
 
 void PDFController::generateSamplePDF()
@@ -1064,7 +777,7 @@ void PDFController::generateSamplePDF()
 
     const InvoiceIDs id = static_cast<InvoiceIDs>(m_pdfData["id"].toInt());
     switch(id){
-    case VENDA: generateBuySellInvoicePDFPDF(painter); break;
+    case VENDA: generateBuySellInvoicePDF(painter); break;
     case MULTIRRISCOS: generateSegurosPDF(painter); break;
     case ALFANDEGA: generateAlfandegaPDF(painter); break;
     case EMPRESTIMO: generateLoanPDF(painter); break;
@@ -1186,6 +899,7 @@ void PDFController::saveFile(const QString &filename)
         qWarning() << "Error writing to file:" << localPath;
 }
 
+// TODO para remover
 QString PDFController::getPdfAsBase64() const {
     if (m_currentPdfData.isEmpty()) {
         return QString();

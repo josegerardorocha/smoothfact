@@ -24,7 +24,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 onAddLoanData: (data) => {
-                    console.log("BankLoanPage.qml: onAddLoanData called with:", JSON.stringify(data))
+                    // console.log("BankLoanPage.qml: onAddLoanData called with:", JSON.stringify(data))
                     showData.header = {
                         "loanNumber": "EMP " + Math.floor(Math.random() * 900000) + 100000,
                         "date": data.date,
@@ -42,7 +42,7 @@ Rectangle {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 onGenerateLoanPdf: (loanData) => {
-                    console.log("BankLoanPage.qml: onGenerateLoanPdf called with loanData:", JSON.stringify(loanData))
+                    // console.log("BankLoanPage.qml: onGenerateLoanPdf called with loanData:", JSON.stringify(loanData))
                     viewer.pdfData = {
                         "id": PDFController.EMPRESTIMO,
                         "header": {
@@ -58,7 +58,7 @@ Rectangle {
                             "date": loanData.date,
                             "seller":{
                                 "VAT":"530004585",
-                                "address":"Rua do Ipca, 10",
+                                "address":"Rua do Ipca, 10\n4750-234 Barcelos",
                                 "company":"Banco Ipca, Lda",
                                 "country":"Portugal",
                                 "CapitalSocial": "5.000.000€",
@@ -72,14 +72,35 @@ Rectangle {
                     viewer.updatePdf()
                 }
                 onGenerateInstallmentPdf: (installmentData) => {
-                    console.log("BankLoanPage.qml: onGenerateInstallmentPdf called with data:",
-                        JSON.stringify(installmentData))
-                    const cleanPdfData = {
-                        "id": 6,
-                        "installment": installmentData,
-                        "company": CompanyData
+                    // console.log("BankLoanPage.qml: onGenerateInstallmentPdf called with data:",
+                        //JSON.stringify(installmentData))
+                    viewer.pdfData = {
+                        "id": PDFController.EMPRESTIMO_PRESTACAO,
+                        "header": {
+                            "buyer":{
+                                "VAT":CompanyData.nif,
+                                "address":CompanyData.address,
+                                "company": CompanyData.name,
+                                "country":"Portugal",
+                                "countryCode":"PT"
+                            },
+                            "number": FormatNumber.randomInvoiceNumber(),
+                            "type": "Factura-Recibo FB "+ FormatNumber.year(installmentData.date) + "/",
+                            "contract": "CT3421" + FormatNumber.randomInvoiceNumber(),
+                            "date": installmentData.date,
+                            "seller":{
+                                "VAT":"530004585",
+                                "address":"Rua do Ipca, 10\n4750-234 Barcelos",
+                                "company":"Banco Ipca, Lda",
+                                "country":"Portugal",
+                                "CapitalSocial": "5.000.000€",
+                                "Conservatoria": "Barcelos",
+                                "countryCode":"PT"
+                            }
+                        },
+                        "installmentData": installmentData
                     }
-                    viewer.pdfData = cleanPdfData
+                    
                     stackLayout.currentIndex = 1
                     viewer.updatePdf()
                 }

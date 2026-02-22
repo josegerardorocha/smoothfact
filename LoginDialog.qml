@@ -24,7 +24,7 @@ Rectangle{
                                  //console.log("Login OK, user:", response.username)
                                  root.loginSuccess(response.username)
                              } else {
-                                 console.log("Login failed: ", response ? response.message : "No response")
+                                 // console.log("Login failed: ", response ? response.message : "No response")
                                  errorAnim.restart()
                              }
                          }

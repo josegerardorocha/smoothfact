@@ -24,7 +24,7 @@ Rectangle {
     }
 
     function updateShowDataHeader(data){
-        console.log("-------------InvoicePage.qml: updateShowDataHeader called", JSON.stringify(data))
+        // console.log("-------------InvoicePage.qml: updateShowDataHeader called", JSON.stringify(data))
         let c1 = formatCustomer(data.country, data.company, data.address, data.nif)
         let c2 = formatCustomer("Portugal", CompanyData.name, CompanyData.address, CompanyData.nif)
         let buyer  = data.tipoOperacao === "venda" ? c1 : c2
@@ -43,7 +43,7 @@ Rectangle {
         }
     }
     function updateAddRow(data){
-        console.log("InvoicePage.qml: updateAddRow called")
+        // console.log("InvoicePage.qml: updateAddRow called")
         showData.model.append(data)
         showData.header.carga = data.carga
         showData.header.descarga = data.descarga
@@ -138,7 +138,7 @@ Rectangle {
                     viewer.updatePdf()
                 }
                 onClearInvoiceData: {
-                    console.log("********************* InvoicePage.qml: Clearing InvoiceShowData")
+                    // console.log("********************* InvoicePage.qml: Clearing InvoiceShowData")
                     invoiceForm.headerVisible = true
                 }
             }

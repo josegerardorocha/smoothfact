@@ -28,7 +28,7 @@ ScrollView {
                 "&nif_prefix=" + "267" +
                 "&niss_prefix=" + "12" +
                 "&iban_prefix=" + ibanCombo.bancoPrefix + "0000";
-        console.log("+++++++++++++ params: ", params)
+        // console.log("+++++++++++++ params: ", params)
         HttpRequest.post("backend/generate_portuguese_name.php", params, function(success, response) {
             if (success) {
                 textModel.append({
@@ -46,9 +46,9 @@ ScrollView {
                                      "niss": response.niss,
                                      "iban": response.iban
                                  })
-                console.log("+++++++++++++ Data loaded:", JSON.stringify(response))
+                // console.log("+++++++++++++ Data loaded:", JSON.stringify(response))
             } else {
-                console.log("+++++++++++++++++ Failed to load data")
+                // console.log("+++++++++++++++++ Failed to load data")
             }
         })
     }
@@ -69,14 +69,14 @@ ScrollView {
             array.push(item);
         }
         var params = JSON.stringify(array)
-        console.log("json array=", params);
+        // console.log("json array=", params);
 
         HttpRequest.post("backend/workers.php", params, function(success, response) {
             // console.log("response:", response)
             if (success) {
-                console.log("Update successful. Received:", response.insertedCount)
+                // console.log("Update successful. Received:", response.insertedCount)
             } else {
-                console.log("Update failed")
+                // console.log("Update failed")
             }
         }, { "Content-Type": "application/json" })
     }
@@ -84,17 +84,17 @@ ScrollView {
     ListModel {
         id: textModel
         Component.onCompleted: {
-            console.log("Loading workers from backend...")
+            // console.log("Loading workers from backend...")
 
             HttpRequest.get("backend/workers.php", function(success, response) {
                 if (success && response.status === "ok") {
-                    console.log("Workers loaded:", response.count)
+                    // console.log("Workers loaded:", response.count)
                     textModel.clear()
                     for (var i = 0; i < response.workers.length; i++) {
                         textModel.append(response.workers[i])
                     }
                 } else {
-                    console.log("Failed to load workers:", response)
+                    // console.log("Failed to load workers:", response)
                 }
             })
         }

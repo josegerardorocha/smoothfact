@@ -79,7 +79,7 @@ ApplicationWindow {
                     }
                 ]
                 onSubmenuClicked: (menuTitle, submenuTitle, submenuIndex) => {
-                                      console.log("Clicked: menuTitle", menuTitle, "submenuTitle", submenuTitle, "submenuIndex:", submenuIndex)
+                                      // console.log("Clicked: menuTitle", menuTitle, "submenuTitle", submenuTitle, "submenuIndex:", submenuIndex)
                                       // Change the page in the StackLayout
                                       currentPage = submenuIndex
                                   }
@@ -101,10 +101,10 @@ ApplicationWindow {
                             if (response.status === "ok") {
                                 // console.log("User logged out successfully.")
                             } else {
-                                console.log("Unexpected response:", response)
+                                // console.log("Unexpected response:", response)
                             }
                         } else {
-                            console.log("Logout request failed.")
+                            // console.log("Logout request failed.")
                         }
                     })
                     // Go back to LoginForm

@@ -198,9 +198,13 @@ Rectangle{
                                     "hash":"ABCD1234EFGH5678IJKL9012MNOP3456",
                                     "iban":"PT50000201231234567890154",
                                     "atcud":"JJRD3W6T-3",
+                                    "percentImpostoSelo": 0.5,
+                                    "percentInem": 0.25,
+                                    "percentFAT": 0.15,
+                                    "percentFGA": 0.1,
                                     "seller":{
                                         "VAT":"563292610",
-                                        "address":"Rua do Ipca, 145",
+                                        "address":"Rua do Ipca, 145\n4760-034 Barcelos",
                                         "company":"Seguros Ipca, Lda",
                                         "country":"Portugal",
                                         "countryCode":"PT"

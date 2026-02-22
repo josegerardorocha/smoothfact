@@ -11,6 +11,21 @@ Item {
     implicitHeight: 40
     //implicitWidth: 250
 
+    function modelNameAt(index) {
+        if (index < 0 || !model) {
+            return ""
+        }
+        if (model.get && typeof model.get === "function") {
+            const item = model.get(index)
+            return item && item.name !== undefined ? item.name : ""
+        }
+        if (model.length !== undefined && model[index] !== undefined) {
+            const item = model[index]
+            return item && item.name !== undefined ? item.name : ""
+        }
+        return ""
+    }
+
     ComboBox {
         id: combo
         anchors.fill: parent
@@ -30,7 +45,7 @@ Item {
         }
         contentItem: Text {
             id: displayTextItem
-            text: combo.currentIndex >= 0 ? combo.model.get(combo.currentIndex).name : ""
+            text: root.modelNameAt(combo.currentIndex)
             anchors.fill: parent
             anchors.leftMargin: combo.leftPadding
             anchors.rightMargin: combo.rightPadding
@@ -101,7 +116,7 @@ Item {
         }
         onCurrentIndexChanged: {
             if (currentIndex >= 0){
-                root.selectedText = model.get(currentIndex).name
+                root.selectedText = root.modelNameAt(currentIndex)
             }
         }
     }

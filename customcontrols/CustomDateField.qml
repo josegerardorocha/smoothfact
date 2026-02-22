@@ -46,7 +46,7 @@ Item {
 
         //onAccepted: {
         onTextChanged: {
-            console.log("<<<<<<<<<<<<<<<<<<< CustomDateField: onAccepted text =", text)
+            // console.log("<<<<<<<<<<<<<<<<<<< CustomDateField: onAccepted text =", text)
             // if (validator.regularExpression.test(text)) {
                 // Optional deeper check (e.g., handle invalid days in February)
                 const parts = text.split("/");

@@ -6,5 +6,6 @@ Existem 2 scripts php: customers e suppliers. Juntar num só e alterar o código
 
 No InvoiceForm.qml retirar width=600; passar para a diretoria invoices
 
-No menu, remover os eventos de hover e deixar apenas os de click
+Criar conta admin que permite inserir empresas a partir do excel
 
+Permitir inserir clientes e fornecedores a partir de uma folha excel

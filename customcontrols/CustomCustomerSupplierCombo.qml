@@ -39,25 +39,25 @@ Item {
         isLoading = true
         errorMessage = ""
         let apiUrl = placeholderText == "Cliente" ? "backend/customers.php" : "backend/suppliers.php"
-        console.log("Loading customers suppliers from backend...")
+        // console.log("Loading customers suppliers from backend...")
 
         HttpRequest.get(apiUrl, function(success, response) {
             isLoading = false
             if (success && response.status === "ok") {
                 var items = response.customers || response.suppliers || []
-                console.log("customers suppliers loaded:", items.length)
+                // console.log("customers suppliers loaded:", items.length)
                 theModel.clear()
                 // Place an entry 'nova empresa' at the top of the list
                 theModel.append({ id: "new", company: "Nova Empresa", country: "", address: "", nif: "" })
                 for (var i = 0; i < items.length; i++) {
                     theModel.append(items[i])
-                    console.log("---------------> customers suppliers:", items[i])
+                    // console.log("---------------> customers suppliers:", items[i])
                 }
                 // Always select first entry ("Nova Empresa") regardless of data loaded
                 combo.currentIndex = 0
                 dataChanged()
             } else {
-                console.log("Failed to load customers suppliers:", response)
+                // console.log("Failed to load customers suppliers:", response)
                 errorMessage = response.error || "Unknown error"
                 dataError(errorMessage)
             }

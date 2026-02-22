@@ -25,10 +25,10 @@ Rectangle {
                 ListElement { name: "Seguro Multirriscos" }
             }
             onIndexChanged: {
-                console.log("Seguro selecionado:", combo.index)
+                // console.log("Seguro selecionado:", combo.index)
                 //titleText.text = combo.selectedText
                 stack.currentIndex = combo.index
-                console.log("Stack index alterado para:", stack.currentIndex)
+                // console.log("Stack index alterado para:", stack.currentIndex)
             }
         }
         Item{
